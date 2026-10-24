@@ -1,0 +1,90 @@
+/* Focused interactive lessons, using the existing course theme in both modes. */
+.course-workspace { min-width: 0; }
+.course-compare-pair { display: flex; align-items: center; gap: var(--sp-4); }
+.course-compare-pair > div { flex: 1; min-width: 0; padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); display: grid; gap: var(--sp-2); }
+.course-compare-pair small, .course-compare-pair code { color: var(--muted); font-size: var(--fs-xs); }
+.course-other-pair { margin: var(--sp-4) 0; }
+/* Equal columns: a .9 / 1.1 split made two cards in one row visibly different
+   widths, which read as "not aligned" rather than as a deliberate hierarchy. */
+.course-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); align-items: start; }
+.course-grid > * { min-width: 0; }
+.course-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-4);
+  align-items: start;
+}
+/* Panel titles drop from h2 to h3 with the JS (spec 8: one h2 per card). Styles unchanged. */
+.course-terminal h3 { display: flex; align-items: center; gap: var(--sp-2); }
+.course-muted, .course-empty { color: var(--muted); font-size: var(--fs-xs); line-height: 1.6; }
+.course-empty { padding: var(--sp-4) 0; }
+.course-copy h3, .course-selection h3 { font-size: var(--fs-xs); margin: var(--sp-4) 0 var(--sp-2); }
+/* The copies block sits directly under the tree with no gap. `:not(:empty)` so
+   the margin only appears in the modes that actually fill it - the others leave
+   the div empty and must not gain a stray gap. */
+.course-copies:not(:empty) { margin-top: var(--sp-4); }
+.course-selection { padding: var(--sp-3); border-radius: var(--r-sm); background: var(--surface-2); }
+.course-output { margin: 0; padding: var(--sp-4); background: var(--surface-sunk); border: 1px solid var(--border); border-radius: var(--r-md); font: var(--fs-xs)/1.7 var(--font-mono); color: var(--text-soft); white-space: pre-wrap; overflow-wrap: anywhere; max-height: 430px; overflow: auto; }
+/* Same reason as .gitterm__log: the overlay scrollbar takes no width, so a
+   block that scrolls looked identical to one that was cut off. Do NOT add
+   `scrollbar-width` - it makes Chromium ignore these rules. */
+.course-output::-webkit-scrollbar { width: 10px; }
+.course-output::-webkit-scrollbar-track { background: transparent; }
+.course-output::-webkit-scrollbar-thumb { background: var(--border-firm); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+.course-output .is-add { color: var(--good); background: var(--good-soft); }
+.course-output .is-remove { color: var(--bad); background: var(--bad-soft); }
+.course-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin: var(--sp-4) 0; }
+.course-label { display: block; color: var(--text-soft); font-size: var(--fs-xs); font-weight: var(--fw-semibold); margin: var(--sp-3) 0 var(--sp-2); }
+.course-editor, .course-select { border: 1px solid var(--border-firm); border-radius: var(--r-sm); background: var(--surface-2); color: var(--text); width: 100%; padding: var(--sp-3); }
+.course-editor { font: var(--fs-xs)/1.7 var(--font-mono); resize: vertical; min-height: 110px; }
+.course-select { font: inherit; font-size: var(--fs-xs); }
+.course-preview { border: 1px solid var(--border); border-radius: var(--r-md); padding: var(--sp-4); display: grid; gap: var(--sp-3); background: var(--surface-2); }
+.course-preview small { color: var(--muted); }
+.course-preview strong { color: var(--accent); font-size: var(--fs-xl); overflow-wrap: anywhere; }
+.course-record { margin-top: var(--sp-4); }
+.course-record:empty { display: none; }
+.course-record .lesson-record > div { min-width: 0; flex: 1; }
+.course-timeline { list-style: none; margin: var(--sp-4) 0; padding: 0; }
+.course-timeline li { position: relative; padding-bottom: var(--sp-3); }
+.course-timeline li:not(:last-child)::after { content: ''; position: absolute; left: calc(var(--sp-3) + var(--g-node) / 2 - 1px); top: 35px; bottom: -28px; width: var(--g-edge); background: var(--border-firm); pointer-events: none; }
+.course-node { position: relative; width: 100%; padding: var(--sp-3); display: flex; align-items: center; gap: var(--sp-3); border: 1px solid transparent; border-radius: var(--r-md); background: transparent; color: var(--text); text-align: left; cursor: pointer; transition: background var(--dur), border-color var(--dur); min-height: 68px; }
+.course-node:hover { background: var(--surface-2); border-color: var(--border-firm); }
+.course-node.is-picked { border-color: var(--accent-line); background: var(--accent-soft); }
+/* The same node as every commit picture draws, at the same size (theme.css,
+   `--g-node`); the connector hangs off the token so the two stay in step. */
+.course-dot { width: var(--g-node); height: var(--g-node); flex: none; background: var(--surface); border: var(--g-node-border) solid var(--accent); border-radius: 50%; position: relative; z-index: var(--z-1); }
+.course-node.is-picked .course-dot { background: var(--accent); box-shadow: inset 0 0 0 5px var(--surface); }
+.course-node > span:nth-child(2) { display: grid; gap: 3px; min-width: 0; flex: 1; }
+.course-node strong { font-size: var(--fs-xs); }
+.course-node small { color: var(--muted); font-size: var(--fs-xs); }
+.course-badge { font: var(--fw-semibold) var(--fs-xs) var(--font-mono); padding: 4px 7px; border-radius: var(--r-pill); background: var(--accent); color: var(--accent-ink); flex: none; animation: lesson-arrive var(--dur-340) ease-out; }
+.course-detail h3 { font-size: var(--fs-lg); margin: var(--sp-3) 0 var(--sp-5); }
+.course-detail dl { display: grid; gap: var(--sp-4); }
+.course-detail dt { color: var(--muted); font-size: var(--fs-xs); margin-bottom: 4px; }
+.course-detail dd { margin: 0; overflow-wrap: anywhere; font-size: var(--fs-xs); }
+.course-full-log { margin-top: var(--sp-4); }
+.course-full-log .course-output { margin-top: var(--sp-3); }
+.course-log-start { text-align: center; padding: var(--sp-7) var(--sp-5); }
+/* The icon is a block (svg.lucide { display: block }), so `text-align: center`
+   never moved it - it sat against the left edge while the heading below it was
+   centred. Give it the same centring explicitly. */
+.course-log-start > svg { color: var(--accent); display: block; margin: 0 auto var(--sp-4); }
+/* The terminal is left-aligned furniture: the panel's centring must not reach
+   inside it, or the "Type ..." hint ends up centred under a left-aligned prompt. */
+.course-log-start .gitterm { text-align: left; }
+.course-log-start .btn { margin-top: var(--sp-4); }
+.course-head-position { padding: var(--sp-4); background: var(--info-soft); border: 1px solid var(--info); border-radius: var(--r-md); margin-top: var(--sp-4); display: grid; gap: var(--sp-2); }
+.course-head-position strong { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.course-head-position p { margin: 0; }
+.course-head-position pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: var(--fs-xs); margin: 0; }
+/* The graph carries no margin - .gframe is shared by six labs, so spacing belongs to the cell using it. */
+.course-head-graph { --g-max: 160px; margin: var(--sp-5) auto; }
+.course-head-quiz .course-actions { justify-content: center; }
+.course-head-quiz > p { text-align: center; }
+.course-head-quiz .is-answer { background: var(--good-soft); border-color: var(--good); color: var(--good); opacity: 1; }
+.course-head-quiz .is-incorrect { border-color: var(--bad); }
+@media (max-width: 1080px) { .course-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Stack only on narrow screens: side by side needs both columns readable, impossible under 1080. */
+@media (max-width: 1080px) { .course-board { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 620px) { .course-grid .lesson-panel { padding: var(--sp-4); } }
+@media (prefers-reduced-motion: reduce) { .course-node { transition: none; } .course-workspace .is-arriving, .course-record .is-arriving, .course-badge { animation: none; } }

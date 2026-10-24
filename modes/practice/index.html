@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Playground</title>
+
+<script>
+  (function () {
+    var mode;
+    try { mode = localStorage.getItem('vge.theme'); } catch (e) { mode = null; }
+    if (mode !== 'light' && mode !== 'dark') {
+      mode = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', mode);
+  })();
+</script>
+
+<link rel="stylesheet" href="../shared/css/tokens.css">
+<link rel="stylesheet" href="../shared/css/controls.css">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components/buttons.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components/appbar.css">
+<link rel="stylesheet" href="css/components/cards.css">
+<link rel="stylesheet" href="css/components/tree.css">
+<link rel="stylesheet" href="css/components/graph.css">
+<link rel="stylesheet" href="css/components/terminal.css">
+<link rel="stylesheet" href="css/components/chat.css">
+<link rel="stylesheet" href="css/components/modal.css">
+<link rel="stylesheet" href="css/responsive.css?v=4-navigation">
+<!-- Onboarding tour: this page's own overlay, see core/tour.js. Kept during the topbar alignment. -->
+<link rel="stylesheet" href="css/components/tour.css">
+</head>
+<body data-mode="teaching">
+
+<header class="appbar">
+  <a class="brand" href="../../index.html" title="Back to home" aria-label="Back to home"
+     data-i18n-title="nav.homeTitle" data-i18n-aria="nav.homeTitle">
+    <span class="brand-logo"><span class="ic lg" data-ic="gitBranch" aria-hidden="true"></span></span>
+    <span class="brand-name" data-i18n="app.brand">Git Playground</span>
+  </a>
+  <div class="spacer"></div>
+  <a class="icon-btn page-link" id="returnToLesson" href="../../index.html" hidden
+     title="Back to lesson" aria-label="Back to lesson"
+     data-i18n-title="nav.lessonTitle" data-i18n-aria="nav.lessonTitle">
+    <span class="ic" data-ic="cap" aria-hidden="true"></span>
+    <span class="page-link__label" data-i18n="nav.lesson">Back to lesson</span>
+  </a>
+  <!-- The mode switch is gone: this prototype keeps only teaching, so the page
+       stays at data-mode="teaching" (see app.js setMode and main.js boot).
+       renderModeChrome() still loops over .mode; an empty set is a no-op. -->
+  <button class="icon-btn" id="resetBtn" title="重置练习沙盒" data-i18n-title="btn.resetTitle"
+          aria-label="重置练习沙盒" data-i18n-aria="btn.resetTitle">
+    <span class="ic" data-ic="rotateCcw"></span>
+  </button>
+  <!-- Theme toggle: both icons stay in the DOM and [data-theme] picks which shows
+       (see appbar.css). The button shows the state it switches TO: a moon in light. -->
+  <button class="icon-btn theme-toggle" id="themeBtn" title="切换明暗主题"
+          data-i18n-title="theme.toggle" aria-label="切换明暗主题" data-i18n-aria="theme.toggle">
+    <span class="ic ic-moon" data-ic="moon"></span>
+    <span class="ic ic-sun" data-ic="sun"></span>
+  </button>
+  <button class="icon-btn" id="aiCfgBtn" title="AI 模型配置" aria-label="AI 模型配置" data-i18n-title="cfg.title" data-i18n-aria="cfg.title">
+    <span class="ic" data-ic="settings"></span>
+  </button>
+</header>
+
+<div class="main">
+  <div class="col" id="colLeft">
+    <!-- In stacked (half-screen) mode the whole column becomes a floating layer,
+         toggled by the button at the graph's top left. Hidden in desktop three-column. -->
+    <button class="files-close" id="filesClose" aria-label="收起文件与工作区" data-i18n-aria="files.closeAria">
+      <span class="ic sm" data-ic="x"></span>
+    </button>
+    <!-- Needs an id to match layout.css's first-card height rule: .card:first-child
+         never matched because this column's first child is the .files-close button. -->
+    <section class="card grow" id="treeCard">
+      <div class="card-head">
+        <span class="ic" data-ic="folderTree"></span> <span data-i18n="card.tree">文件结构</span>
+        <span class="hint" id="treeHint">工作区 · main</span>
+      </div>
+      <div class="card-body tight" id="treeBox"></div>
+      <div class="tree-legend">
+        <span class="L"><span class="badge A">A</span> <span data-i18n="legend.add">新增</span></span>
+        <span class="L"><span class="badge M">M</span> <span data-i18n="legend.mod">修改</span></span>
+        <span class="L"><span class="badge D">D</span> <span data-i18n="legend.del">删除</span></span>
+        <span class="L"><span class="sdot staged" style="margin-left:0"></span> <span data-i18n="legend.staged">已暂存</span></span>
+        <span class="L"><span class="sdot unstaged" style="margin-left:0"></span> <span data-i18n="legend.unstaged">未暂存</span></span>
+      </div>
+    </section>
+
+    <section class="card" id="wsCard">
+      <div class="card-head">
+        <span class="ic" data-ic="lightbulb"></span> <span data-i18n="card.ws">工作区</span>
+        <span class="hint" data-i18n="card.wsHint">待提交</span>
+      </div>
+      <div class="card-body" id="wsBox"></div>
+    </section>
+  </div>
+
+  <div class="col" id="colMid">
+    <section class="card graph-card">
+      <div class="card-head">
+        <!-- Toggles the left column in half-screen mode. It sits IN the card-head
+             flow: the absolute version needed a hand-set padding-left and overlapped
+             the icon below 760px. Flex then spaces button / icon / title at any width. -->
+        <button class="files-toggle btn btn--sm" id="filesToggle" aria-expanded="false" aria-controls="colLeft"
+                data-i18n-title="files.toggleTitle" data-i18n-aria="files.toggleAria">
+          <span class="ic sm" data-ic="folderTree"></span>
+          <span data-i18n="files.toggle">文件与工作区</span>
+          <span class="ic xs chev" data-ic="chevronDown"></span>
+        </button>
+        <span class="ic" data-ic="gitBranch"></span> <span data-i18n="card.graph">提交图</span>
+        <span class="hint"><span class="ic xs" data-ic="eye"></span> <span data-i18n="card.graphHint">悬停节点查看该提交的目录快照</span></span>
+      </div>
+      <div class="graph-wrap" id="graphWrap">
+        <div class="g-badge"><span class="ic xs" data-ic="gitCommit"></span> <span id="graphMeta">HEAD → main · 4 提交</span></div>
+        <div class="g-tools">
+          <button class="icon-btn sm" id="gFit" title="自适应视图" data-i18n-title="graph.fit"><span class="ic sm" data-ic="fullscreen"></span></button>
+          <!-- The direction button's icon shows the CURRENT layout (two blocks side
+               by side = horizontal, stacked = vertical); clicking switches it. LR / UD
+               also appear in #gEngine. setDirIcon() swaps the icon. -->
+          <button class="icon-btn sm" id="gDir" title="切换横向 / 纵向排布" data-i18n-title="graph.dir"><span class="ic sm" data-ic="layoutArrowRight"></span></button>
+        </div>
+        <div id="gnet"></div>
+        <svg id="gsvg" style="display:none"></svg>
+      </div>
+      <div class="legend">
+        <span class="L"><span class="sw" style="background:var(--panel);border-color:#2563eb"></span> <span data-i18n="legend.commit">普通提交</span></span>
+        <span class="L"><span class="sw" style="background:var(--panel);border-color:#16a34a;border-width:3.5px"></span> <span data-i18n="legend.merge">合并提交</span></span>
+        <span class="L"><span class="sw" style="background:var(--panel);border-color:#d97706;border-width:3px;background-image:radial-gradient(circle,#d97706 0 1.9px,var(--panel) 1.9px)"></span> <span data-i18n="legend.root">根提交</span></span>
+        <span class="L" data-i18n-title="legend.headTitle"><span class="sw" style="background:var(--panel);border-color:#2563eb;box-shadow:0 0 0 3px rgba(217,118,46,.35)"></span> <span data-i18n="legend.head">HEAD</span></span>
+        <span class="L"><!-- The swatch must match model.js's BR_MAIN: main is purple, so blue here would contradict it -->
+        <span class="swb" style="background:#7c3aed">main</span> <span data-i18n="legend.branch">分支引用</span></span>
+        <span class="tipbit" id="gEngine"><span class="ic xs" data-ic="info"></span> vis-network · 横向</span>
+      </div>
+    </section>
+
+    <section class="card term" id="termCard">
+      <div class="card-head">
+        <span class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></span>
+        <span class="ic" data-ic="terminal"></span> <span data-i18n="card.term">命令终端</span>
+        <span class="hint"><span class="ic xs" data-ic="cornerUpLeft"></span> <span id="termHintTxt" data-i18n="card.termHint">悬停任意一行可回溯到该步</span></span>
+      </div>
+      <div class="term-out" id="termOut"></div>
+      <!-- Row order deliberately matches the AI card: body, then quick chips, then
+           input. The two panels swap in row 3, so matching order avoids a jump. -->
+      <div class="chips" id="chips">
+        <button class="chip" data-cmd="git status">status</button>
+        <button class="chip" data-cmd="git add .">add .</button>
+        <button class="chip" data-cmd="git commit -m &quot;update&quot;">commit</button>
+        <button class="chip" data-cmd="git branch feature">branch</button>
+        <button class="chip" data-cmd="git switch main">switch</button>
+        <button class="chip" data-cmd="git merge feature">merge</button>
+        <button class="chip" data-cmd="git rebase main">rebase</button>
+        <button class="chip" data-cmd="git log">log</button>
+      </div>
+      <div class="term-input">
+        <div class="cmd-row">
+          <!-- The switch button sits left of the input, sized like the other row
+               controls (35 high, 8 radius). This card is the terminal, so the button
+               shows the AI icon. In half-screen the panels stack, so only one shows. -->
+          <button class="pswitch icon-btn" type="button" data-panel="ai" title="切到 AI 助手"
+                  data-i18n-title="stack.toAiAria" data-i18n-aria="stack.toAiAria">
+            <span class="ic sm" data-ic="sparkles"></span>
+          </button>
+          <div class="cmd-field">
+            <span class="ps" id="psPrefix">visual-git (main) $</span>
+            <input id="cmdInput" spellcheck="false" autocomplete="off" data-i18n-ph="term.placeholder" placeholder="输入 git 命令…">
+          </div>
+          <button class="run btn btn--primary" id="runBtn"><span class="ic sm" data-ic="play"></span> <span data-i18n="term.run">运行</span></button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="col" id="colRight">
+    <section class="card" id="aiCard">
+      <div class="card-head">
+        <span class="ic" data-ic="sparkles"></span> <span data-i18n="card.ai">AI 助手</span>
+        <button class="ai-status chip" id="aiStatus" title="AI 模型配置" data-i18n-title="cfg.title"></button>
+      </div>
+      <div class="chat" id="chat"></div>
+      <div class="sugs" id="sugs"></div>
+      <div class="chat-input">
+        <button class="pswitch icon-btn" type="button" data-panel="term" title="切到命令终端"
+                data-i18n-title="stack.toTermAria" data-i18n-aria="stack.toTermAria">
+          <span class="ic sm" data-ic="terminal"></span>
+        </button>
+        <div class="f"><span class="ic sm" data-ic="help" style="color:var(--muted)"></span>
+          <input id="aiInput" data-i18n-ph="ai.placeholder" placeholder="向 AI 提问，例如：merge 和 rebase 有什么区别？"></div>
+        <button class="send btn btn--primary" id="aiSend"><span class="ic sm" data-ic="send"></span> <span data-i18n="btn.send">发送</span></button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Commit node hover preview: attached to body so card overflow cannot clip it -->
+<div class="gtip" id="gtip"></div>
+
+<!-- Hover indicator for the switch control, also on body (cards are overflow:hidden).
+     core/stacked.js positions it from the control when shown, so this is empty here. -->
+<span class="psw-tip" id="panelTip" role="tooltip"></span>
+
+<div class="mask" id="mask">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h4><span class="ic" data-ic="alert" style="color:var(--del)"></span> <span id="mTitle">重置练习沙盒</span></h4>
+    <p id="mBody">将清空当前沙盒仓库的全部提交、分支与命令历史，任务进度回到第 1 步。<br>此操作只影响沙盒，不会触碰任何真实仓库。</p>
+    <div class="acts">
+      <button class="mbtn btn" id="mCancel" data-i18n="btn.cancel">取消</button>
+      <button class="mbtn btn btn--danger" id="mOk">确认重置</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="maskCfg">
+  <!-- cfg-modal only carries the bottom padding: with the footer buttons gone the
+       last row would touch the edge (see modal.css) -->
+  <div class="modal wide cfg-modal" role="dialog" aria-modal="true" aria-labelledby="cfgTitle">
+    <h4><span class="ic" data-ic="settings" style="color:var(--indigo)"></span> <span id="cfgTitle" data-i18n="cfg.settings">设置</span></h4>
+    <div class="cfg-sec" data-i18n="cfg.aiSection">AI 设置</div>
+    <div class="cfg-intro" data-i18n="cfg.intro">填入任意 OpenAI 兼容接口。</div>
+    <div class="cfg-form">
+      <div class="cfg-row">
+        <label class="k" for="aiEndpoint" data-i18n="cfg.endpoint">接口地址</label>
+        <input id="aiEndpoint" type="url" spellcheck="false" autocomplete="off"
+               data-i18n-ph="cfg.endpointPh" placeholder="https://api.deepseek.com/chat/completions">
+      </div>
+      <div class="cfg-row">
+        <label class="k" for="aiKey" data-i18n="cfg.key">API Key</label>
+        <span class="k-wrap">
+          <input id="aiKey" type="password" spellcheck="false" autocomplete="off"
+                 data-i18n-ph="cfg.keyPh" placeholder="sk-…">
+          <button class="keyeye icon-btn ghost sm" id="aiKeyEye" type="button" aria-label="显示 / 隐藏密钥" data-i18n-aria="cfg.keyEyeAria">
+            <span class="ic sm" data-ic="eye"></span></button>
+        </span>
+      </div>
+      <div class="cfg-row">
+        <label class="k" for="aiModel" data-i18n="cfg.model">模型名称</label>
+        <input id="aiModel" spellcheck="false" autocomplete="off"
+               data-i18n-ph="cfg.modelPh" placeholder="deepseek-flash">
+        <!-- "Test" sits right of the model field because it tests this row's config;
+             the result appears just below -->
+        <button class="mbtn btn" id="aiCfgTest"><span data-i18n="cfg.test">测试</span></button>
+      </div>
+      <div class="cfg-msg" id="aiCfgMsg"></div>
+    </div>
+    <div class="cfg-sec" data-i18n="layout.title">系统</div>
+    <div class="cfg-form">
+      <!-- Three rows share one spec: label left, control right, fixed width
+           (.cfg-row.end, see modal.css), so their right edges line up as a group.
+           The two-way language slider is built by syncLangSeg(). -->
+      <div class="cfg-row end">
+        <span class="k" data-i18n="cfg.language">界面语言</span>
+        <div class="seg" id="langSeg" role="radiogroup" data-i18n-aria="cfg.language">
+          <span class="seg-pill" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="cfg-row end">
+        <span class="k" data-i18n="layout.label">布局</span>
+        <button class="mbtn btn" id="layoutReset" data-i18n="layout.reset">重置布局</button>
+      </div>
+      <div class="cfg-row end">
+        <span class="k" data-i18n="cfg.dataLabel">数据</span>
+        <button class="mbtn btn btn--danger" id="aiCfgClear" data-i18n="cfg.clear">清除数据</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- A separate panel, not an AI chat bubble: the dialog is only 344px wide, too narrow for a diff -->
+<div class="mask" id="maskNode">
+  <div class="modal node-modal" role="dialog" aria-modal="true" aria-labelledby="nodeTitle">
+    <h4>
+      <span class="ic" data-ic="gitCommit" style="color:var(--indigo)"></span>
+      <span id="nodeTitle" data-i18n="node.title">节点详情</span>
+      <button class="mclose icon-btn ghost sm" id="nodeClose" aria-label="关闭" data-i18n-aria="btn.closeAria">
+        <span class="ic sm" data-ic="x"></span>
+      </button>
+    </h4>
+    <div class="node-body" id="nodeBody"></div>
+  </div>
+</div>
+
+<!-- Scripts, loaded in dependency order (vendor, data, core, main.js entry) -->
+<script src="../shared/js/icons.js"></script>
+<script src="js/vendor/vis-network.min.js"></script>
+<script src="../shared/js/i18n-dict.js"></script>
+<script src="js/data/lang-extra.js"></script>
+<script src="../shared/js/changesets.js"></script>
+<script src="../shared/js/theme.js"></script>
+<script src="../shared/js/git-engine.js"></script>
+<script src="js/core/render.js"></script>
+<script src="js/core/ai.js"></script>
+<script src="js/core/layout.js"></script>
+<script src="js/core/stacked.js"></script>
+<script src="js/core/app.js"></script>
+<script src="js/core/navigation.js"></script>
+<script src="js/core/tour.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

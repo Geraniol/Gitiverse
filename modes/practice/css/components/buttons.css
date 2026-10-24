@@ -1,0 +1,70 @@
+
+/* Re-point the shared controls.css defaults to this page's palette. Must be on
+   :root - see the note above. */
+:root{
+  --ctl-bg:var(--panel);
+  --ctl-bg-hover:var(--panel);          /* practice keeps the same hover fill (learn changes it) */
+  --ctl-bg-active:var(--panel);
+  --ctl-bd:var(--line);
+  --ctl-bd-hover:var(--line-2);         /* .btn hover border */
+  --ctl-bd-hover-i:var(--accent-line);  /* .icon-btn hover border */
+  --ctl-fg:var(--ink);                  /* text button colour */
+  --ctl-fg-idle:var(--ink-3);           /* icon-only button colour when idle, one step lighter than body text */
+  --ctl-fg-hover:var(--accent);
+}
+
+
+/* Primary action: solid accent. Hover darkens the fill and drops the border
+   (color-mix, no extra token). It ignores container surface vars: the orange
+   fill reads the same on a dark terminal and a light card. */
+.btn--primary,.btn--primary:hover{--ctl-bg:var(--accent);--ctl-bd:var(--accent);--ctl-fg:var(--accent-ink);}
+.btn--primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000);border-color:transparent;}
+
+/* Danger: soft red fill + red text. Hover does not darken (the learn page only
+   swaps the border) - a destructive action should not be made more inviting. */
+.btn--danger{--ctl-fg:var(--del);background:var(--del-bg);border-color:color-mix(in srgb,var(--del) 35%,var(--ctl-bd));}
+.btn--danger:hover{border-color:var(--del);background:var(--del-bg);}
+
+/* Compact size: 26px tall, for dense rows like the terminal and dialogs. */
+.btn--sm{height:var(--ctl-sm-h);padding:0 11px;border-radius:var(--r-sm);font-size:var(--ctl-sm-fs);}
+
+
+.icon-btn.sm{--ib:var(--ctl-sm-h);border-radius:var(--r-sm);}
+/* Frameless: dialog close cross and password eye. Embedded in other elements, so no fill or shadow. */
+.icon-btn.ghost{background:transparent;border-color:transparent;box-shadow:none;}
+.icon-btn.ghost:hover{background:var(--panel-3);border-color:transparent;color:var(--ink);transform:none;box-shadow:none;}
+
+/* Pill control. Borrows the learn page's .chip look (pill + border + border
+   shadow) but not its drag behaviour; the 2px hover lift is removed. */
+.chip{
+  display:inline-flex;align-items:center;gap:6px;flex:none;white-space:nowrap;
+  height:var(--ctl-sm-h);padding:0 12px;
+  border-radius:var(--r-pill);
+  border:1px solid var(--ctl-bd);
+  background:var(--ctl-bg);
+  color:var(--ctl-fg);
+  font-size:var(--ctl-sm-fs);font-weight:600;
+  box-shadow:var(--shadow-1);
+  transition:scale var(--dur-fast) var(--ease),
+             box-shadow var(--dur-fast) var(--ease),
+             border-color var(--dur-fast) var(--ease),
+             background-color var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease);
+}
+.chip:hover{border-color:var(--ctl-bd-hover);box-shadow:var(--shadow-2);}
+/* Press scale --press, same as .btn / .icon-btn (see shared/css/controls.css). */
+.chip:active{box-shadow:var(--shadow-1);scale:var(--press);}
+
+.term .btn,.term .icon-btn,.term .chip{
+  --ctl-bg:var(--term-bg3);
+  --ctl-bd:var(--term-line);
+  --ctl-bd-hover:var(--t-btn-hover-bd);
+  --ctl-fg:var(--term-ink);
+  --ctl-fg-idle:var(--t-btn-ink);
+  --ctl-fg-hover:var(--term-amber);
+  --ctl-bd-hover-i:color-mix(in srgb,var(--term-amber) 50%,transparent);
+}
+/* No white shadow on dark: it just smears into a dirty halo.
+   The primary button drops it too - the orange block pops on black already. */
+.term .btn,.term .icon-btn,.term .chip,
+.term .btn:hover,.term .icon-btn:hover,.term .chip:hover{box-shadow:none;}

@@ -1,0 +1,76 @@
+
+/* Workspace card: fixed height, does not grow with the file tree; overflow
+   scrolls inside the card. Default 210px (head 38 + padding 20 + stat row 50
+   + ~4 rows). Draggable via --ws-h on desktop; this fallback is the base. */
+#wsCard{flex:0 0 auto;height:var(--ws-h,210px);max-height:none;}
+#wsCard:has(.confl-hd){flex:1 1 auto;height:auto;max-height:56%;}
+/* The AI card is the right column's only card, so it fills the column height.
+   flex:1 1 auto grows/shrinks to content; below min-height the inner .chat
+   scrolls. max-height is none so it always reaches the column bottom. */
+#aiCard{flex:1 1 auto;min-height:196px;max-height:none;}
+
+.stat-row{display:flex;gap:6px;margin-bottom:9px;}
+.stat{flex:1;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2);padding:6px 4px;text-align:center;}
+.stat .v{font-family:var(--font-mono);font-size:var(--fs-num);font-weight:750;line-height:1.2;color:var(--ink-2);}
+.stat .k{font-size:var(--fs-cap);color:var(--muted);}
+.stat.hi{background:var(--stg-bg);border-color:var(--stg-bd);}
+.stat.hi .v{color:var(--stg);}
+
+.tip{display:flex;gap:8px;border-radius:var(--r-sm);padding:9px 10px;font-size:var(--fs-md);line-height:1.62;border:1px solid;}
+.tip .ic{margin-top:1px;}
+/* No .tip.info variant: only warn / ok / stop exist. */
+.tip.warn{background:var(--mod-bg);border-color:var(--mod-bd);color:var(--mod);}
+.tip.ok  {background:var(--ok-bg); border-color:var(--ok-bd); color:var(--ok);}
+.tip.stop{background:var(--del-bg);border-color:var(--del-bd);color:var(--del);}
+.tip code{font-family:var(--font-mono);background:var(--panel);border-radius:var(--r-xs);padding:1px 5px;}
+.tip b{font-weight:700;}
+
+.prev-list{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2);padding:6px 8px;font-family:var(--font-mono);font-size:var(--fs-sm);}
+.prev-list .r{display:flex;align-items:center;gap:7px;padding:2px 0;color:var(--ink-2);}
+.prev-empty{font-family:var(--font-ui);font-size:var(--fs-sm);color:var(--muted);padding:4px 2px;}
+
+.confl-hd{display:flex;align-items:center;gap:6px;font-size:var(--fs-md);font-weight:800;color:var(--del);margin-bottom:3px;}
+.confl-hd .n{margin-left:auto;font-family:var(--font-mono);font-size:var(--fs-sm);color:color-mix(in srgb,var(--del) 55%,var(--del-bg));background:var(--del-bg);border:1px solid var(--del-bd);border-radius:var(--r-pill);padding:0 8px;}
+.confl-desc{font-size:var(--fs-sm);color:var(--ink-3);line-height:1.6;margin-bottom:9px;}
+.cf-file{border:1px solid var(--del-bd);border-left:3px solid var(--del);border-radius:var(--r-sm);background:var(--panel);margin-bottom:8px;overflow:hidden;}
+.cf-name{display:flex;align-items:center;gap:7px;padding:6px 9px;font-family:var(--font-mono);font-size:var(--fs-md);font-weight:700;color:var(--del);background:var(--del-bg);border-bottom:1px solid var(--del-bd);}
+.cf-name .ic{color:var(--del);}
+.cf-mk{display:flex;justify-content:space-between;padding:4px 9px 0;font-size:var(--fs-cap);font-weight:800;letter-spacing:.3px;color:var(--muted);}
+.cf-mk .h{color:var(--stg)}.cf-mk .t{color:var(--indigo);}
+.cf-code{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--del-bd);border-bottom:1px solid var(--del-bd);}
+.cf-code span{font-family:var(--font-mono);font-size:var(--fs-sm);line-height:1.6;padding:6px 9px;white-space:pre-wrap;word-break:break-word;color:var(--ink-2);}
+.cf-code .m{border-right:1px solid var(--del-bd);background:var(--stg-bg);}
+.cf-code .t{background:var(--indigo-bg);}
+.cf-btns{display:flex;gap:5px;padding:7px 9px;}
+/* The three conflict buttons (keep mine / keep theirs / keep both). Appearance
+   is .btn--sm; here they just split the row into thirds. "Keep both" gets a
+   blue hover fill because it is the safest option. */
+.cfb{flex:1;}
+.cfb.both:hover{background:var(--stg-bg);border-color:var(--stg-bd);color:var(--stg);}
+
+.diffbox{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2);margin-top:9px;overflow:hidden;}
+.diffbox .cap{display:flex;align-items:center;gap:6px;padding:5px 9px;font-family:var(--font-mono);font-size:var(--fs-sm);font-weight:700;color:var(--ink-2);background:var(--panel-2);border-bottom:1px solid var(--line);}
+.diffbox .cap .ic{color:var(--muted);}
+.dl{font-family:var(--font-mono);font-size:var(--fs-sm);line-height:1.65;padding:6px 9px;max-height:168px;overflow:auto;}
+.dl .l{white-space:pre;color:var(--ink-2);}
+.dl .l.add{background:var(--ok-bg);color:var(--ok);}
+.dl .l.del{background:var(--del-bg);color:var(--del);}
+
+.pswitch{
+  --ib:var(--ctl-md-h);
+  flex:none;display:none;
+}
+.pswitch .ic{width:16px;height:16px;}
+
+/* Hover tip: attached to body (card overflow:hidden would clip it); JS positions it */
+.psw-tip{
+  position:fixed;z-index:120;max-width:min(300px,70vw);padding:6px 10px;border-radius:var(--r-sm);
+  background:var(--tip-bg);color:var(--tip-ink);font-size:var(--fs-sm);font-weight:600;letter-spacing:.1px;
+  white-space:nowrap;box-shadow:var(--shadow-3);pointer-events:none;
+  opacity:0;visibility:hidden;transform:translateY(-4px);transition:.16s;
+}
+.psw-tip.on{opacity:1;visibility:visible;transform:none;}
+.psw-tip::before{                      /* small arrow pointing up at the control */
+  content:'';position:absolute;bottom:100%;left:14px;border:5px solid transparent;
+  border-bottom-color:var(--tip-bg);
+}

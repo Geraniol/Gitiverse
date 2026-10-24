@@ -1,0 +1,56 @@
+.chat{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:10px 12px;}
+.bub{flex:0 0 auto;max-width:95%;border-radius:var(--r-md);padding:8px 11px;font-size:var(--fs-md);line-height:1.7;}
+.bub.ai{background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--line-2);color:var(--ink-2);}
+.bub.me{align-self:flex-end;background:var(--stg-bg);border:1px solid var(--stg-bd);color:var(--ink-2);}
+.bub code{font-family:var(--font-mono);background:var(--panel-3);border-radius:var(--r-xs);padding:1px 5px;font-size:var(--fs-sm);color:var(--ink-2);}
+.bub b{color:var(--ink);font-weight:700;}
+.bub .sub{display:block;margin-top:3px;font-size:var(--fs-sm);color:var(--muted);}
+.sugs{
+  /* Matches the terminal's .chips exactly (no-wrap, horizontal scroll): the two alternate, so this must not deform */
+  display:flex;flex-wrap:nowrap;gap:6px;flex:none;align-items:center;
+  padding:8px 12px;min-height:40px;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;
+  border-top:1px solid var(--line);background:var(--panel-2);
+}
+.sugs::-webkit-scrollbar{height:0;display:none;}
+/* Suggestion questions use the .chip primitive (see buttons.css). No rules here -
+   the old .sug / .sug:hover are gone; markup carries chip directly (app.js renderSugs). */
+.chat-input{display:flex;gap:8px;flex:none;padding:9px 12px;border-top:1px solid var(--line);background:var(--panel);}
+.chat-input .f{
+  /* Radius matches the send/toggle buttons in the same row (--r-md), as with .cmd-field in the terminal */
+  flex:1;min-width:0;height:var(--ctl-md-h);display:flex;align-items:center;gap:7px;
+  border:1px solid var(--line-2);border-radius:var(--r-md);padding:0 11px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.chat-input .f:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring);}
+.chat-input input{flex:1;min-width:0;border:none;outline:none;background:none;padding:0;height:100%;font-size:var(--fs-md);}
+/* Send button: look comes from .btn .btn--primary (buttons.css); this only makes it
+   wider than the field - it is the primary action in the row. */
+.send{flex:none;}
+.send.stop{--ctl-bg:var(--del);--ctl-bd:var(--del);--ctl-fg:var(--accent-ink);}
+.send.stop:hover{background:color-mix(in srgb,var(--del) 88%,#000);border-color:transparent;}
+
+.ai-status{margin-left:auto;max-width:200px;color:var(--muted);}
+.ai-status>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ai-status .dot{
+  width:7px;height:7px;border-radius:50%;flex:none;
+  background:var(--line-2);box-shadow:0 0 0 2px color-mix(in srgb,var(--line-2) 35%,transparent);
+}
+.ai-status:hover{
+  transform:none;box-shadow:var(--shadow-1);
+  border-color:var(--line);background:var(--panel);color:var(--muted);
+}
+.ai-status.on{color:var(--ok);border-color:var(--ok-bd);background:var(--ok-bg);}
+.ai-status.on .dot{background:var(--ok);box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 22%,transparent);}
+/* Read-only = normal, keeps .ai-status's default gray; writable = commands really
+   change the user's real repo, so it turns red (same danger color as "clear data"). */
+
+.bub .caret{
+  display:inline-block;width:6px;height:12px;margin-left:2px;vertical-align:-2px;
+  background:var(--muted);border-radius:1px;animation:vgeCaret 1s steps(2,start) infinite;
+}
+@keyframes vgeCaret{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+.bub.err{background:var(--del-bg);border-color:var(--del-bd);border-left-color:var(--del);color:var(--del);}
+.bub.err .sub{color:color-mix(in srgb,var(--del) 68%,var(--ink-2));}
+.bub.err code{background:var(--panel);color:var(--del);}
+.bub .sub code{background:var(--panel);}

@@ -1,0 +1,124 @@
+
+/* Light is the default. learn.html writes data-theme on <html>; :root is the
+   fallback so the page stays readable light even if JS never runs. */
+:root,
+[data-theme="light"]{
+  color-scheme:light;                /* make native controls follow the theme */
+
+  --font-ui:"Segoe UI Variable Text","Segoe UI",Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --font-mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,Menlo,monospace;
+
+  --bg:#f4f6fb;
+  --panel:#ffffff;
+  --panel-2:#f6f8fc;
+  --panel-3:#eceff7;
+
+  --line:#e2e7f1;
+  --line-2:#cdd5e5;
+
+  --ink:#0e1526;
+  --ink-2:#35405a;
+  --ink-3:#64708c;
+  --muted:#98a3bd;
+
+  --accent:#e8542f;
+  --accent-ink:#ffffff;
+  --accent-soft:#fdeee9;
+  --accent-line:#f7c9ba;
+  /* Focus glow on inputs. One token because it recurs on every input/dropdown,
+     so scattering rgba would drift into several shades. */
+  --focus-ring:color-mix(in srgb,var(--focus) 16%,transparent);
+  /* Scrim behind dialogs (was a hard-coded rgba). */
+  --scrim:rgba(10,16,30,.5);
+
+  --ok:#16a34a;   --ok-bg:#e6f6ec;   --ok-bd:#b7e2c8;
+  --mod:#d97706;  --mod-bg:#fdf1e0;  --mod-bd:#f0d8a8;
+  --del:#dc2626;  --del-bg:#fdeaea;  --del-bd:#f3c4c4;
+  --stg:#3b82f6;  --stg-bg:#e8f1fe;  --stg-bd:#bfdbfe;
+
+  /* Section/concept accent plus its tints - the conflict panel pairs it with
+     --stg ("incoming" vs "my version"). Base hue is chapter_1's --violet. */
+  --indigo:#7c5cf0;  --indigo-bg:#efeaff;  --indigo-bd:#d9d0ff;
+
+  /* Tooltip (.psw-tip): an inverted bubble - dark on light, flipped in dark.
+     Two tokens, not a hard-coded rgba, or the dark theme gets dark-on-dark. */
+  --tip-bg:#1e293b;  --tip-ink:#e8eef7;
+
+  --term-bg:#0d1117;
+  --term-bg2:#161b22;
+  --term-bg3:#1c2431;
+  --term-line:#242c38;
+  --term-ink:#c9d3e0;
+  --term-dim:#7c8798;
+  --term-green:#4ade80;
+  --term-red:#f87171;
+  --term-blue:#7cb6ff;
+  --term-amber:#f5c66b;
+
+
+  --ctl-label-fs:10px;
+  --ctl-sm-h:   26px; --ctl-sm-fs:  11.5px;
+  --ctl-md-fs:  12px;
+
+  --topbar-h:64px;
+
+  --fs-cap:  10px;
+  --fs-sm:  11.5px;
+  --fs-md:  12.5px;
+  --fs-lg:  14px;
+  --fs-num: 17px;
+
+  --shadow-1:0 1px 2px rgba(16,24,45,.05),0 1px 3px rgba(16,24,45,.04);
+  --shadow-2:0 2px 4px rgba(16,24,45,.05),0 8px 20px -6px rgba(16,24,45,.12);
+  --shadow-3:0 10px 34px -10px rgba(16,24,45,.24);
+  --shadow:var(--shadow-1);
+  --shadow-lg:var(--shadow-3);
+
+  --dur-fast:140ms;
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+/* Values come from learn.html's [data-theme="dark"]; families it lacks
+   (--term-*, --*-bd, --indigo) are hand-matched. Toggle: shared/js/theme.js. */
+[data-theme="dark"]{
+  color-scheme:dark;
+
+  --bg:#080d18;
+  --panel:#111a2c;
+  --panel-2:#16203a;
+  --panel-3:#1d2942;
+
+  --line:#22304c;
+  --line-2:#33425f;
+
+  --ink:#e9eefb;
+  --ink-2:#c3cde3;
+  --ink-3:#8b98b8;
+  --muted:#64708e;
+
+  --accent:#ff6a44;
+  --accent-ink:#ffffff;
+  --accent-soft:#3a1d16;
+  --accent-line:#6d3323;
+  --focus-ring:color-mix(in srgb,var(--focus) 26%,transparent);
+  --scrim:rgba(0,0,0,.68);
+
+  /* On dark, semantic colours brighten and the light-theme pastels (*-bg)
+     darken, or a block like #e6f6ec looks pasted on. --*-bd flips direction:
+     lighter than the fill here, darker in the light theme. */
+  --ok:#34c46b;   --ok-bg:#102c1e;   --ok-bd:#2b5f42;
+  --mod:#f0a13a;  --mod-bg:#33230d;  --mod-bd:#6b4a1c;
+  --del:#f0645f;  --del-bg:#3a1717;  --del-bd:#6b2b2b;
+  --stg:#5b9dff;  --stg-bg:#14243f;  --stg-bd:#2b4a7a;
+
+  --indigo:#9b83ff;  --indigo-bg:#241c45;  --indigo-bd:#3b2f6b;
+  --tip-bg:#e9eefb;  --tip-ink:#0e1526;
+
+  /* Terminal family intentionally not overridden - see the light block. */
+
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --shadow-2:0 2px 6px rgba(0,0,0,.42),0 10px 26px -8px rgba(0,0,0,.6);
+  --shadow-3:0 14px 40px -12px rgba(0,0,0,.75);
+  --shadow:var(--shadow-1);
+  --shadow-lg:var(--shadow-3);
+}

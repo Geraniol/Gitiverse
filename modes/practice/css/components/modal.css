@@ -1,0 +1,157 @@
+.mask{position:fixed;inset:0;background:var(--scrim);display:none;align-items:center;justify-content:center;z-index:100;backdrop-filter:blur(2px);}
+/* The generic confirm box (#mask) must sit above the settings modal, since it
+   opens from inside it (clear data / write-mode confirm). At equal z-index the
+   DOM order decides, and #mask comes first, so it was fully covered. */
+#mask{z-index:130;}
+.mask.on{display:flex;}
+.modal{width:352px;background:var(--panel);border-radius:var(--r-md);box-shadow:var(--shadow-lg);overflow:hidden;}
+.modal h4{display:flex;align-items:center;gap:8px;padding:13px 15px 0;font-size:var(--fs-lg);color:var(--ink);}
+.modal p{padding:8px 15px 14px;font-size:var(--fs-md);color:var(--ink-3);line-height:1.7;}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;padding:11px 15px;background:var(--panel-2);border-top:1px solid var(--line);}
+/* Modal buttons: appearance comes from the .btn base (see buttons.css), with
+   wider horizontal padding only. The old .mbtn.pri / .mbtn.go color sets are
+   gone, now expressed by .btn--danger / .btn--primary (see index.html). */
+.mbtn{padding:0 16px;}
+/* .modal .err is removed - it was the team-code modal's error row (#teamErr),
+   gone with that modal. Do not confuse it with the terminal's .tout.err,
+   which is still in use. */
+
+.modal.wide{width:452px;max-width:calc(100vw - 24px);}
+.modal .cfg-intro{padding:8px 15px 12px;font-size:var(--fs-sm);line-height:1.68;color:var(--ink-3);}
+.modal .cfg-form{padding:0 15px;display:flex;flex-direction:column;gap:9px;}
+.cfg-row{display:flex;align-items:center;gap:10px;}
+.cfg-row>.k{flex:0 0 92px;font-size:var(--fs-sm);font-weight:650;color:var(--ink-3);}
+.cfg-row input,.cfg-row select{
+  flex:1;min-width:0;border:1px solid var(--line-2);border-radius:var(--r-md);padding:7px 10px;
+  outline:none;background:var(--panel);font-size:var(--fs-md);
+  transition:border-color .15s,box-shadow .15s;
+}
+/* One shared control height: input 38px, select 38px, button 38px, language
+   slider 38px. Otherwise each control type computes its own height from its
+   font and their edges misalign. */
+.cfg-row input,.cfg-row select,.cfg-row>.mbtn,.seg{height:var(--ctl-md-h);}
+.cfg-row input:focus,.cfg-row select:focus{border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring);}
+/* The select matches the input spec: without resetting appearance the arrow
+   is the native system one, not the panel's icon set. Height comes from the
+   shared rule above (38px, same as inputs). */
+.cfg-row select{
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  /* select does not inherit base.css button,input{font:inherit}, so without this it uses the UA system font */
+  font-family:inherit;font-size:var(--fs-sm);padding-right:28px;cursor:pointer;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b879b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;background-size:13px 13px;
+}
+.cfg-row select:hover{border-color:var(--line-2);}
+.modal .cfg-row.end{justify-content:space-between;gap:14px;}
+.modal .cfg-row.end>.k{flex:0 1 auto;}
+.modal .cfg-row.end>.mbtn,
+.modal .cfg-row.end>.seg{flex:none;width:134px;}
+.modal .cfg-row.end>.mbtn{padding:0;}
+
+/* Two-segment slider (language / read-only-writable): a white pill slides via
+   transform. Option buttons are built by JS, and data-idx on the container
+   decides which slot the pill stops in. */
+.seg{
+  --seg-w:64px;
+  position:relative;display:inline-flex;flex:none;padding:2px;
+  border:1px solid var(--line-2);border-radius:var(--r-md);background:var(--panel-2);
+}
+.seg-pill{
+  position:absolute;top:2px;left:2px;width:var(--seg-w);height:calc(100% - 4px);
+  border-radius:calc(var(--r-md) - 2px);background:var(--panel);box-shadow:var(--shadow-1);
+  transition:transform .18s ease;
+}
+/* The pill's slot comes from data-idx (0 / 1) - shared by the language and
+   read-only sliders, no longer tied to a language code. data-cur is still
+   kept and holds the current value itself. */
+.seg[data-idx="1"] .seg-pill{transform:translateX(var(--seg-w));}
+.seg-opt{
+  position:relative;z-index:1;width:var(--seg-w);height:100%;padding:0;border:0;
+  background:none;border-radius:calc(var(--r-md) - 2px);font-family:inherit;font-size:var(--fs-sm);font-weight:650;
+  color:var(--muted);cursor:pointer;transition:color .15s;
+}
+.seg-opt:hover{color:var(--ink-3);}
+.seg-opt.on{color:var(--ink);}
+/* Danger-state slider (currently only "local repo read-only -> writable"):
+   switching to writable lets commands change the user's real repository, so
+   the whole slider turns red, the same danger color as "clear data". */
+.seg.warn{border-color:var(--del-bd);background:var(--del-bg);}
+.seg.warn .seg-pill{background:var(--del);box-shadow:var(--shadow-1);}
+.seg.warn .seg-opt{color:color-mix(in srgb,var(--del) 62%,var(--ink-2));}
+.seg.warn .seg-opt:hover{color:var(--del);}
+.seg.warn .seg-opt.on{color:var(--accent-ink);}
+.cfg-row input[type="password"],.cfg-row input[type="url"]{
+  font-family:var(--font-mono);font-size:var(--fs-sm);letter-spacing:0;
+}
+/* Checkbox row: resets .cfg-row input's full-row styling, keeping only a small square */
+
+/* Wider than normal modals: it holds per-file diffs, unreadable at 344px */
+.modal.node-modal{width:640px;max-width:calc(100vw - 24px);display:flex;flex-direction:column;max-height:calc(100vh - 60px);}
+.modal.node-modal h4{padding-bottom:10px;border-bottom:1px solid var(--line);}
+.modal.node-modal h4 .ic{color:var(--indigo);flex:none;}
+/* Close X: appearance comes from .icon-btn.ghost.sm (see buttons.css); only
+   pushed to the right end of the title row. */
+.modal.node-modal .mclose{margin-left:auto;}
+/* Content area flexes and scrolls internally: diffs can be long, so the modal never overflows the screen */
+.modal.node-modal .node-body{padding:11px 15px 15px;overflow:auto;flex:1 1 auto;min-height:0;font-size:var(--fs-md);line-height:1.7;color:var(--ink-2);}
+.modal.node-modal .node-body .sub{margin-top:6px;}
+/* Key field: the outer wrapper owns the border and focus ring, with icon buttons inside */
+.k-wrap{
+  flex:1;min-width:0;display:flex;align-items:center;gap:4px;
+  border:1px solid var(--line-2);border-radius:var(--r-md);background:var(--panel);padding-right:5px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.k-wrap:focus-within{border-color:var(--focus);box-shadow:0 0 0 3px var(--focus-ring);}
+.k-wrap input{flex:1;min-width:0;border:none;border-radius:0;background:none;padding:7px 6px 7px 10px;}
+.k-wrap input:focus{box-shadow:none;}
+/* Show/hide eye in the key field: appearance comes from .icon-btn.ghost.sm (see buttons.css) */
+.keyeye{flex:none;}
+/* The test-result row appears on demand: display:none until a test runs, so
+   the panel height floats with its content. Do not make it a permanent
+   placeholder (min-height), which would leave a blank line forever. */
+.modal .cfg-msg{padding:2px 0 0;font-size:var(--fs-sm);line-height:1.6;display:none;}
+.modal .cfg-msg.on{display:block;}
+.modal .cfg-msg.ok{color:var(--ok);}
+.modal .cfg-msg.bad{color:var(--del);}
+.modal .acts .grow{flex:1;}
+
+.modal .cfg-sec{
+  display:flex;align-items:center;gap:6px;margin:12px 15px 0;
+  font-size:var(--fs-sm);font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-2);
+}
+.modal .cfg-sec:first-of-type{margin-top:10px;}
+/* A full-width divider plus extra spacing between the two settings groups,
+   which a small gray title alone did not separate. The 15px side margins of
+   .cfg-sec become padding - negative margins would overflow the modal. */
+.modal .cfg-form+.cfg-sec{
+  margin:20px 0 0;padding:16px 15px 0;border-top:1px solid var(--line);
+}
+/* Only the "interface settings" section has a title directly above control
+   rows (the AI section has .cfg-intro between them), so only this adjacency
+   gets extra spacing. */
+.modal .cfg-sec + .cfg-form{margin-top:9px;}
+.modal .cfg-form + .acts{margin-top:14px;}
+.modal.cfg-modal{padding-bottom:14px;}
+.cfg-row>.mbtn{flex:none;}
+
+.modal.node-modal .node-stats{display:flex;flex-wrap:wrap;align-items:center;gap:11px;margin:10px 0 7px;font-size:var(--fs-sm);font-weight:650;}
+.node-stats .ns{display:inline-flex;align-items:center;gap:3px;}
+.node-stats .ns.a{color:var(--ok);}
+.node-stats .ns.m{color:var(--mod);}
+.node-stats .ns.d{color:var(--del);}
+.node-stats .ns.n{color:var(--muted);font-weight:500;margin-left:auto;}
+/* Directory view: lists only files changed in this commit, intermediate dirs added automatically */
+.modal.node-modal .node-tree{
+  border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel-2);padding:7px 9px;
+}
+.node-tree .tnode{border-radius:var(--r-sm);transition:background .12s;}
+/* File rows are clickable (expand diff); directory rows are structure only, not interactive */
+.node-tree .tnode.clickable{cursor:pointer;}
+.node-tree .tnode.clickable:hover{background:var(--panel-3);}
+.node-tree .tnode.open{background:var(--stg-bg);}
+.node-tree .nd-stat{margin-left:auto;flex:none;display:inline-flex;gap:7px;font-family:var(--font-mono);font-size:var(--fs-sm);font-weight:700;}
+.node-tree .nd-stat .p{color:var(--ok);}
+.node-tree .nd-stat .m{color:var(--del);}
+/* Expanded diff: indented to align with the tree, visually belonging to that file */
+.nodediff{margin:3px 0 9px 18px;}
+.nodediff .diffbox{margin-top:0;}

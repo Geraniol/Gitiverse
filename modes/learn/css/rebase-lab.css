@@ -1,0 +1,610 @@
+/* Chapter 9 - Merge vs Rebase - visual history lab */
+.rebase-guide { display:grid; gap:var(--sp-5); }
+.rebase-board { display:grid; gap:var(--sp-4); }
+.rebase-stack { display:grid; gap:var(--sp-4); }
+.rebase-card { border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface); box-shadow:var(--shadow-1); overflow:hidden; }
+.rebase-card__head { min-height:50px; display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); padding:var(--sp-3) var(--sp-4); border-bottom:1px solid var(--border); background:var(--surface-2); }
+.rebase-card__head > div { display:flex; align-items:center; gap:var(--sp-2); }
+.rebase-card__head svg { color:var(--accent); }
+.rebase-card__caption { display:flex; align-items:flex-start; gap:var(--sp-2); padding:var(--sp-3) var(--sp-4); border-top:1px solid var(--border); color:var(--muted); font-size:var(--fs-xs); line-height:1.55; }
+.rebase-card__caption svg { flex:none; margin-top:2px; color:var(--accent); }
+.rebase-status { display:inline-flex; align-items:center; gap:6px; padding:5px 8px; border:1px solid var(--border); border-radius: var(--r-pill); color:var(--muted); background:var(--surface); font-size:var(--fs-xs); white-space:nowrap; }
+.rebase-status.is-warn { border-color:color-mix(in srgb,var(--warn) 38%,var(--border)); background:var(--warn-soft); color:var(--warn); }
+.rebase-status.is-good { border-color:color-mix(in srgb,var(--good) 38%,var(--border)); background:var(--good-soft); color:var(--good); }
+.rebase-status.is-working { border-color:color-mix(in srgb,var(--info) 38%,var(--border)); background:var(--info-soft); color:var(--info); }
+.rebase-status.is-working svg { animation:spin var(--dur-1000) linear infinite; }
+
+.rebase-phases { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--sp-2); }
+.rebase-phases:has(.rebase-phase:nth-child(5)) { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.rebase-phase { display:flex; align-items:center; gap:7px; min-width:0; padding:9px 10px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface-2); color:var(--faint); font-size:var(--fs-xs); transition:var(--dur-250) var(--ease); }
+.rebase-phase > span { flex:none; display:grid; place-items:center; width:21px; height:21px; border-radius:50%; border:1px solid var(--border-firm); background:var(--surface); font:var(--fw-bold) var(--fs-cap) var(--font-mono); }
+.rebase-phase b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rebase-phase.is-active { color:var(--text); border-color:var(--accent-line); background:var(--accent-soft); transform:translateY(-1px); }
+.rebase-phase.is-active > span { color:var(--accent-ink); border-color:var(--accent); background:var(--accent); animation:pulse-ring var(--dur-1100) var(--ease) infinite; }
+.rebase-phase.is-done { color:var(--text-soft); border-color:color-mix(in srgb,var(--good) 32%,var(--border)); }
+.rebase-phase.is-done > span { color:var(--good); border-color:var(--good); background:var(--good-soft); }
+
+.rebase-teach { display:grid; grid-template-columns:44px minmax(0,1fr); gap:var(--sp-3); align-items:start; padding:var(--sp-4); border:1px solid var(--border); border-radius:var(--r-lg); background:linear-gradient(135deg,var(--surface),var(--surface-2)); }
+.rebase-teach > svg { display:grid; place-items:center; width:44px; height:44px; padding:11px; border-radius:var(--r-md); background:var(--accent-soft); color:var(--accent); }
+.rebase-teach.is-rebase > svg { background:var(--info-soft); color:var(--info); }
+.rebase-teach.is-risk > svg { background:var(--warn-soft); color:var(--warn); }
+.rebase-teach strong { font-size:var(--fs-md); }
+.rebase-teach p { margin:5px 0 0; color:var(--muted); font-size:var(--fs-xs); line-height:1.6; }
+
+/* The graph itself is in chapter.css section 25 (.gframe / .gnode / .gedge).
+   Only this grid's own bits are here. */
+/* Height cap and aspect ratio come as a pair: 900:330 is the old 330px stage, so
+   the graph is the same size at desktop width and scales down on narrow screens. */
+.rebase-history { --g-max: 330px; }
+.rebase-history.is-compact { --g-max: 250px; }
+/* Branch names sit in the top-right / bottom-right corners: nodes reach 91% at most. */
+/* M is the only clickable node on the graph. */
+.rebase-history .gnode--merge { cursor: pointer; }
+.rebase-history .gnode--merge::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: var(--bw) solid color-mix(in srgb, var(--good) 55%, transparent);
+  border-radius: 50%;
+  animation: pulse-ring var(--dur-1200) var(--ease) infinite;
+}
+.rebase-history .gnode.is-born { animation: rebase-node-born var(--dur-580) var(--ease-out-back) both; }
+.rebase-history .gnode.is-lifted { animation: rebase-lift var(--dur-850) var(--ease) infinite alternate; }
+
+/* Three edge states. Growth is drawn with stroke-dashoffset, NOT transform:
+   scaleX(), which would squash the line caps and rounded corners. */
+.rebase-history .gedge.is-pulsing { animation: rebase-edge-pulse var(--dur-620) var(--ease) infinite; }
+.rebase-history .gedge.is-drawing { animation: gedge-draw var(--dur-700) var(--ease) both; }
+.rebase-history .gedge.is-fading { opacity: .25; animation: rebase-edge-fade var(--dur-1000) var(--ease) infinite alternate; }
+
+.rebase-actions { display:flex; justify-content:center; gap:var(--sp-3); }
+.rebase-actions .btn svg[data-lucide="loader-circle"] { animation:spin var(--dur-1000) linear infinite; }
+.rebase-nudge { display:flex; align-items:center; justify-content:center; gap:var(--sp-2); padding:var(--sp-3) var(--sp-4); border:1px dashed var(--accent-line); border-radius:var(--r-md); color:var(--muted); background:var(--accent-soft); font-size:var(--fs-xs); }
+.rebase-nudge svg { color:var(--accent); }
+.rebase-commit-inspect { display:grid; grid-template-columns:64px minmax(0,1fr); gap:var(--sp-4); padding:var(--sp-5); border:1px solid color-mix(in srgb,var(--good) 35%,var(--border)); border-radius:var(--r-xl); background:var(--surface); box-shadow:var(--shadow-1); animation:fade-rise var(--dur-420) var(--ease) both; }
+.rebase-commit-badge { display:grid; place-items:center; width:58px; height:58px; border:2px solid var(--good); border-radius:50%; background:var(--good-soft); color:var(--good); font:var(--fw-heavy) var(--fs-lg) var(--font-mono); }
+.rebase-commit-inspect h3 { margin:6px 0 12px; font-size:var(--fs-lg); }
+.rebase-commit-inspect dl { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-2); margin:0; }
+.rebase-commit-inspect dl div { padding:var(--sp-3); border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface-2); }
+.rebase-commit-inspect dt { color:var(--faint); font-size:var(--fs-xs); }
+.rebase-commit-inspect dd { margin:4px 0 0; color:var(--text-soft); font-size:var(--fs-xs); }
+
+.rebase-question { display:grid; gap:var(--sp-3); padding:var(--sp-5); border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface); box-shadow:var(--shadow-1); animation:fade-rise var(--dur-380) var(--ease) both; }
+.rebase-question > div:first-child { display:grid; gap:7px; }
+.rebase-question > div:first-child > strong { font-size:var(--fs-md); }
+.rebase-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--sp-3); }
+.rebase-option { display:grid; grid-template-columns:28px minmax(0,1fr); gap:var(--sp-3); align-items:start; padding:var(--sp-4); border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface-2); color:var(--text); text-align:left; cursor:pointer; transition:var(--dur-180) var(--ease); }
+.rebase-option:hover { border-color:var(--accent-line); }
+.rebase-option > svg { color:var(--accent); margin-top:2px; }
+.rebase-option span { display:grid; gap:5px; }
+.rebase-option small { color:var(--muted); line-height:1.45; }
+.rebase-option.is-correct { border-color:var(--good); background:var(--good-soft); }
+.rebase-option.is-correct > svg { color:var(--good); }
+.rebase-option.is-wrong { border-color:var(--warn); background:var(--warn-soft); animation:shake-x var(--dur-360) var(--ease); }
+
+.rebase-animation-caption { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; color:var(--muted); font-size:var(--fs-xs); }
+.rebase-pulse { width:9px; height:9px; border-radius:50%; background:var(--info); box-shadow:0 0 0 0 color-mix(in srgb,var(--info) 35%,transparent); animation:rebase-dot-pulse var(--dur-1100) infinite; }
+.rebase-before-after { display:grid; grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr); gap:var(--sp-3); align-items:center; padding:var(--sp-4); border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.rebase-before-after > div { display:grid; gap:6px; padding:var(--sp-3); border-radius:var(--r-md); background:var(--surface-2); }
+/* The joins in this lab are `.gconn`s (chapter.css section 26); the grid cells
+   already size them, so they add no gap. */
+.rebase-before-after__arrow { color:var(--accent); }
+.rebase-before-after code { font:var(--fw-bold) var(--fs-md) var(--font-mono); color:var(--text); }
+.rebase-before-after small { color:var(--muted); }
+
+.rebase-identity-map { display:grid; grid-template-columns:88px 1fr 54px 48px 88px 1fr 54px; gap:8px; align-items:center; padding:var(--sp-5); border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface-2); overflow:hidden; }
+.rebase-parent { display:grid; place-items:center; gap:3px; }
+.rebase-parent span,.rebase-child { display:grid; place-items:center; width:44px; height:44px; border:2px solid var(--border-firm); border-radius:50%; background:var(--surface); font:750 var(--fs-xs) var(--font-mono); }
+.rebase-parent.is-new span,.rebase-child.is-new { border-color:var(--info); color:var(--info); }
+.rebase-parent small { color:var(--faint); font-size: var(--fs-cap); }
+/* The bar between a parent and its child is a `.gconn--line` (chapter.css
+   section 26), so its weight and colour come from there; only the draw-in is
+   local. */
+.rebase-id-line { animation:rebase-edge-draw var(--dur-650) var(--ease) both; }
+.rebase-id-arrow { color:var(--accent); }
+.rebase-id-arrow svg { animation:spin var(--dur-3500) linear infinite; }
+.rebase-identity-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4); }
+.rebase-identity-card { display:grid; gap:var(--sp-4); padding:var(--sp-5); border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface); color:var(--text); text-align:left; box-shadow:var(--shadow-1); cursor:pointer; transition:var(--dur-200) var(--ease); }
+.rebase-identity-card:hover { border-color:var(--accent-line); }
+.rebase-identity-card.is-open { border-color:color-mix(in srgb,var(--info) 34%,var(--border)); }
+.rebase-identity-card__top { display:grid; grid-template-columns:54px minmax(0,1fr) 20px; gap:var(--sp-3); align-items:center; }
+.rebase-identity-dot { display:grid; place-items:center; width:50px; height:50px; border:2px solid var(--border-firm); border-radius:50%; background:var(--surface-2); font:var(--fw-heavy) var(--fs-md) var(--font-mono); }
+.rebase-identity-dot.is-new { color:var(--info); border-color:var(--info); background:var(--info-soft); }
+.rebase-identity-card__top > div { display:grid; gap:5px; }
+.rebase-identity-card__top > svg { color:var(--faint); }
+.rebase-identity-card > small { color:var(--muted); }
+.rebase-identity-card dl { display:grid; margin:0; gap:0; border:1px solid var(--border); border-radius:var(--r-md); overflow:hidden; animation:fade-rise var(--dur-280) var(--ease) both; }
+.rebase-identity-card dl div { display:grid; grid-template-columns:110px 1fr; padding:10px 12px; background:var(--surface-2); border-bottom:1px solid var(--border); }
+.rebase-identity-card dl div:last-child { border-bottom:0; }
+.rebase-identity-card dl div.is-key { background:var(--accent-soft); }
+.rebase-identity-card dt { color:var(--faint); font-size:var(--fs-xs); }
+.rebase-identity-card dd { margin:0; color:var(--text-soft); font-size:var(--fs-xs); }
+.rebase-diff-focus { display:grid; grid-template-columns:36px minmax(0,1fr); gap:var(--sp-3); padding:var(--sp-4); border:1px solid color-mix(in srgb,var(--info) 35%,var(--border)); border-radius:var(--r-lg); background:var(--info-soft); animation:fade-rise var(--dur-350) var(--ease) both; }
+.rebase-diff-focus > span { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--surface); color:var(--info); }
+.rebase-diff-focus p { margin:4px 0 0; color:var(--muted); font-size:var(--fs-xs); line-height:1.55; }
+
+.rebase-team-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4); }
+.rebase-person { display:grid; gap:var(--sp-4); padding:var(--sp-4); border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface); box-shadow:var(--shadow-1); transition:var(--dur-300) var(--ease); }
+.rebase-person.is-rewritten { border-color:color-mix(in srgb,var(--warn) 42%,var(--border)); animation:rebase-rewrite-flash var(--dur-800) var(--ease) both; }
+.rebase-person__head { display:flex; align-items:center; gap:var(--sp-3); }
+.rebase-person__head > div:nth-child(2) { display:grid; gap:2px; flex:1; }
+.rebase-person__head small { color:var(--muted); }
+.rebase-avatar { display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background:var(--accent-soft); color:var(--accent); font-weight: var(--fw-heavy); }
+.rebase-person:nth-child(2) .rebase-avatar { background:var(--info-soft); color:var(--info); }
+/* Each person's own history: a column of commits and one connecting line (still .gframe). */
+.rebase-person__history { --g-max: 110px; margin: var(--sp-3) auto 0; }
+.rebase-rewrite-banner { display:grid; grid-template-columns:42px minmax(0,1fr); gap:var(--sp-3); padding:var(--sp-4); border:1px solid color-mix(in srgb,var(--warn) 45%,var(--border)); border-radius:var(--r-lg); background:var(--warn-soft); color:var(--text); animation:rebase-banner var(--dur-500) var(--ease-out-back) both; }
+.rebase-rewrite-banner > svg { color:var(--warn); }
+.rebase-rewrite-banner > div { display:grid; gap:4px; }
+.rebase-rewrite-banner span { color:var(--muted); font-size:var(--fs-xs); line-height:1.5; }
+.rebase-divergence { display:grid; grid-template-columns:minmax(0,1fr) 88px minmax(0,1fr); align-items:center; gap:var(--sp-3); padding:var(--sp-5); border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface); }
+.rebase-divergence > div { display:grid; gap:6px; text-align:center; }
+.rebase-divergence code { padding:10px; border-radius:var(--r-md); background:var(--surface-2); font:var(--fw-bold) var(--fs-xs) var(--font-mono); }
+.rebase-divergence > span { display:grid; place-items:center; gap:4px; color:var(--warn); }
+.rebase-divergence small { color:var(--faint); font-size: var(--fs-cap); }
+
+.rebase-compare-intro { display:grid; grid-template-columns:48px minmax(0,1fr); gap:var(--sp-3); align-items:center; padding:var(--sp-4); border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.rebase-compare-intro > span { display:grid; place-items:center; width:44px; height:44px; border-radius:var(--r-md); background:var(--accent-soft); color:var(--accent); }
+.rebase-compare-intro p { margin:4px 0 0; color:var(--muted); font-size:var(--fs-xs); }
+.rebase-compare-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-4); }
+.rebase-compare-panel { display:grid; gap:var(--sp-3); padding:var(--sp-4); border:1px solid var(--border); border-radius:var(--r-xl); background:var(--surface); box-shadow:var(--shadow-1); transition:var(--dur-300) var(--ease); }
+.rebase-compare-panel.is-done { border-color:color-mix(in srgb,var(--good) 38%,var(--border)); }
+.rebase-compare-panel__head { display:flex; justify-content:space-between; align-items:center; gap:var(--sp-3); }
+.rebase-compare-panel__head > div:first-child { display:flex; gap:var(--sp-3); align-items:center; }
+.rebase-compare-panel__head > div:first-child > div { display:grid; gap:3px; }
+.rebase-compare-panel__head small { color:var(--muted); }
+.rebase-method-icon { display:grid; place-items:center; width:40px; height:40px; border-radius:var(--r-md); background:var(--accent-soft); color:var(--accent); }
+.rebase-compare-panel:nth-child(2) .rebase-method-icon { background:var(--info-soft); color:var(--info); }
+.rebase-compare-panel > .btn { justify-content:center; }
+.rebase-result-table { display:grid; border:1px solid var(--border); border-radius:var(--r-xl); overflow:hidden; background:var(--surface); animation:fade-rise var(--dur-400) var(--ease) both; }
+.rebase-result-table > div { display:grid; grid-template-columns:1.4fr 1fr 1fr; }
+.rebase-result-table span,.rebase-result-table b { padding:11px 13px; border-right:1px solid var(--border); border-bottom:1px solid var(--border); font-size:var(--fs-xs); }
+.rebase-result-table b:last-child { border-right:0; }
+.rebase-result-table > div:last-child span,.rebase-result-table > div:last-child b { border-bottom:0; }
+.rebase-result-table span { color:var(--muted); background:var(--surface-2); font-weight: var(--fw-semibold); }
+.rebase-result-table b { font-weight: var(--fw-bold); }
+.rebase-result-table .is-head span,.rebase-result-table .is-head b { background:var(--surface-sunk); color:var(--text); }
+
+/* WARNING: edges cannot "breathe" with box-shadow - an SVG <path> has no box. */
+@keyframes rebase-edge-pulse { 0%,100%{stroke-opacity:.3}50%{stroke-opacity:1} }
+@keyframes rebase-edge-fade { from{opacity:.42}to{opacity:.12} }
+@keyframes rebase-node-born { from{opacity:0;transform:translate(-50%,-50%) scale(.25) rotate(-12deg)} to{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)} }
+/* Used by the thin bar in the 9.3 identity map (a div, not a graph edge). Graph
+   edges use gedge-draw from chapter.css. */
+@keyframes rebase-edge-draw { from{opacity:.15;scale:0 1} to{opacity:1;scale:1 1} }
+@keyframes rebase-lift { from{transform:translate(-50%,-50%)} to{transform:translate(-50%,calc(-50% - 15px));box-shadow:0 14px 22px color-mix(in srgb,var(--info) 24%,transparent)} }
+@keyframes rebase-dot-pulse { 0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--info) 35%,transparent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent} }
+@keyframes rebase-rewrite-flash { 0%{transform:scale(.985);filter:saturate(.5)}55%{transform:scale(1.01);filter:saturate(1.2)}100%{transform:none;filter:none} }
+@keyframes rebase-banner { from{opacity:0;transform:translateY(8px) scale(.98)} to{opacity:1;transform:none} }
+@keyframes spin { to{transform:rotate(360deg)} }
+
+@media (max-width: 1080px) {
+  .rebase-phases,.rebase-phases:has(.rebase-phase:nth-child(5)) { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .rebase-options,.rebase-commit-inspect dl { grid-template-columns:1fr; }
+  .rebase-compare-grid,.rebase-team-grid { grid-template-columns:1fr; }
+}
+@media (max-width: 1080px) {
+  .rebase-identity-grid { grid-template-columns:1fr; }
+  .rebase-identity-map { grid-template-columns:52px 1fr 46px; grid-template-rows:auto auto auto; }
+  .rebase-id-arrow { grid-column:1/-1; }
+  .rebase-before-after,.rebase-divergence { grid-template-columns:1fr; }
+  .rebase-before-after__arrow > .lucide-arrow-right,.rebase-divergence > span { transform:rotate(90deg); }
+  .rebase-result-table { overflow-x:auto; }
+  .rebase-result-table > div { min-width:560px; }
+}
+@media (max-width: 620px) {
+  .rebase-teach { grid-template-columns:1fr; }
+  .rebase-phases,.rebase-phases:has(.rebase-phase:nth-child(5)) { grid-template-columns:1fr; }
+  .rebase-phase b { white-space:normal; }
+  .rebase-commit-inspect { grid-template-columns:1fr; }
+  .rebase-person__head,.rebase-compare-panel__head { align-items:flex-start; flex-direction:column; }
+  .rebase-identity-card dl div { grid-template-columns:1fr; gap:4px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gnode,.gedge,.rebase-phase,.rebase-person,.rebase-rewrite-banner { animation:none!important; transition:none!important; }
+}
+
+.rebase-scenario {
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr);
+  gap:var(--sp-4);
+  align-items:start;
+  padding:var(--sp-5);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  box-shadow:var(--shadow-1);
+}
+.rebase-scenario__icon {
+  display:grid;
+  place-items:center;
+  width:48px;
+  height:48px;
+  border-radius:var(--r-lg);
+  background:var(--accent-soft);
+  color:var(--accent);
+}
+.rebase-scenario h3 { margin:5px 0 6px; font-size:var(--fs-lg); }
+.rebase-scenario p { margin:0; color:var(--muted); line-height:1.6; }
+.rebase-scenario code { font-family:var(--font-mono); color:var(--accent); }
+
+.rebase-step-badge,
+.rebase-compare-step {
+  display:grid;
+  place-items:center;
+  flex:none;
+  width:36px;
+  height:36px;
+  border:1px solid var(--accent-line);
+  border-radius:50%;
+  background:var(--accent-soft);
+  color:var(--accent);
+  font:var(--fw-heavy) var(--fs-sm) var(--font-mono);
+}
+.rebase-teach > .rebase-step-badge { width:44px; height:44px; }
+.rebase-teach code { font-family:var(--font-mono); color:var(--accent); }
+.rebase-teach.is-rebase > .rebase-step-badge { color:var(--info); border-color:color-mix(in srgb,var(--info) 40%,var(--border)); background:var(--info-soft); }
+.rebase-teach.is-risk > .rebase-step-badge { color:var(--warn); border-color:color-mix(in srgb,var(--warn) 40%,var(--border)); background:var(--warn-soft); }
+
+.rebase-command-help {
+  display:grid;
+  grid-template-columns:minmax(210px,.85fr) minmax(0,1fr) minmax(0,1fr);
+  gap:var(--sp-3);
+  padding:var(--sp-4);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  background:var(--surface);
+}
+.rebase-command-help > div {
+  min-width:0;
+  padding:var(--sp-3);
+  border-radius:var(--r-md);
+  background:var(--surface-2);
+}
+.rebase-command-help > div:first-child { display:grid; align-content:center; gap:7px; background:var(--accent-soft); }
+.rebase-command-help code { font:var(--fw-heavy) var(--fs-sm) var(--font-mono); color:var(--accent); }
+.rebase-command-help b { display:block; margin-bottom:4px; }
+.rebase-command-help p { margin:0; color:var(--muted); font-size:var(--fs-xs); line-height:1.55; }
+
+.rebase-changed {
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  gap:var(--sp-3);
+  padding:var(--sp-4);
+  border:1px solid color-mix(in srgb,var(--good) 40%,var(--border));
+  border-radius:var(--r-xl);
+  background:var(--good-soft);
+}
+.rebase-changed > svg { color:var(--good); margin-top:2px; }
+.rebase-changed p { margin:5px 0 0; color:var(--text-soft); line-height:1.55; }
+.rebase-change-strip {
+  display:flex;
+  align-items:center;
+  gap:var(--sp-2);
+  flex-wrap:wrap;
+  margin-top:var(--sp-3);
+  color:var(--muted);
+  font:var(--fw-semibold) var(--fs-xs) var(--font-mono);
+}
+.rebase-change-strip b { color:var(--good); }
+
+.rebase-compare-step { width:30px; height:30px; }
+.rebase-compare-panel__head > div:first-child { flex-wrap:wrap; }
+
+/* Keep graph edges visually stable. Nodes can animate, but the line itself should not
+   look detached from a node while it is being drawn. */
+.rebase-history .gedge.is-drawing { animation:none!important; stroke-dasharray:none!important; stroke-dashoffset:0!important; }
+
+/* Active phase = clear highlight, not a floating/glowing title effect. */
+.rebase-phase.is-active { transform:none; }
+.rebase-phase.is-active > span { animation:none; }
+
+@media (max-width: 1080px) {
+  .rebase-command-help { grid-template-columns:1fr; }
+}
+@media (max-width: 620px) {
+  .rebase-scenario { grid-template-columns:1fr; }
+}
+
+/* Chapter 9 round 2: restore a calm chapter opener, deepen the commit-identity
+   explanation, and turn the final compare page into a decision lab. */
+.rebase-chapter-intro {
+  display:grid;
+  grid-template-columns:64px minmax(0,1fr);
+  gap:var(--sp-5);
+  align-items:start;
+  padding:var(--sp-6);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  box-shadow:var(--shadow-1);
+}
+.rebase-chapter-intro__icon {
+  display:grid;
+  place-items:center;
+  width:58px;
+  height:58px;
+  border-radius:var(--r-lg);
+  background:var(--accent-soft);
+  color:var(--accent);
+}
+.rebase-chapter-intro h2 {
+  margin:6px 0 8px;
+  max-width:950px;
+  font-size:clamp(1.45rem,2vw,2rem);
+  line-height:1.25;
+}
+.rebase-chapter-intro p {
+  margin:0;
+  max-width:980px;
+  color:var(--muted);
+  line-height:1.6;
+}
+.rebase-chapter-intro code { color:var(--accent); font-family:var(--font-mono); }
+.rebase-chapter-intro__path {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:var(--sp-4);
+}
+.rebase-chapter-intro__path span {
+  padding:7px 10px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  background:var(--surface-2);
+  color:var(--muted);
+  font-size:var(--fs-cap);
+  font-weight:var(--fw-semibold);
+}
+
+.rebase-identity-explain {
+  display:grid;
+  gap:var(--sp-4);
+  padding:var(--sp-5);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  background:var(--surface);
+}
+.rebase-identity-explain__lead {
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr);
+  gap:var(--sp-3);
+  align-items:start;
+}
+.rebase-identity-explain__lead strong { font-size:var(--fs-md); }
+.rebase-identity-explain__lead p { margin:5px 0 0; color:var(--muted); line-height:1.6; }
+.rebase-parent-story {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr);
+  gap:var(--sp-3);
+  align-items:stretch;
+}
+.rebase-parent-story > div {
+  padding:var(--sp-4);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  background:var(--surface-2);
+}
+.rebase-parent-story code {
+  display:block;
+  margin:8px 0;
+  font:var(--fw-heavy) var(--fs-md) var(--font-mono);
+  color:var(--text);
+}
+.rebase-parent-story p { margin:0; color:var(--muted); line-height:1.55; }
+.rebase-parent-story__arrow { color:var(--accent); }
+.rebase-identity-formula {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  padding:12px 14px;
+  border-radius:var(--r-lg);
+  background:var(--info-soft);
+  color:var(--text-soft);
+  font-size:var(--fs-xs);
+}
+/* `:not(.gconn)`: the join between the two halves is a <span> too, and a pill
+   around an arrow reads as a third term rather than a connector. */
+.rebase-identity-formula span:not(.gconn),
+.rebase-identity-formula b {
+  padding:6px 10px;
+  border-radius:999px;
+  background:var(--surface);
+  border:1px solid color-mix(in srgb,var(--info) 24%,var(--border));
+}
+.rebase-identity-formula b { color:var(--info); }
+.rebase-parent small { max-width:130px; line-height:1.25; text-align:center; }
+
+.rebase-decision-intro {
+  display:grid;
+  grid-template-columns:46px minmax(0,1fr);
+  gap:var(--sp-3);
+  align-items:start;
+  padding:var(--sp-4);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  background:var(--surface);
+}
+.rebase-decision-intro > span {
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:42px;
+  border-radius:var(--r-md);
+  background:var(--accent-soft);
+  color:var(--accent);
+}
+.rebase-decision-intro p { margin:5px 0 0; color:var(--muted); line-height:1.55; }
+
+.rebase-decision-card {
+  display:grid;
+  gap:var(--sp-4);
+  padding:var(--sp-5);
+  border:1px solid var(--border);
+  border-radius:var(--r-xl);
+  background:var(--surface);
+  box-shadow:var(--shadow-1);
+}
+.rebase-decision-card.is-complete { border-color:color-mix(in srgb,var(--good) 40%,var(--border)); }
+.rebase-decision-card__head {
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) auto;
+  gap:var(--sp-3);
+  align-items:start;
+}
+.rebase-decision-card__head h3 { margin:4px 0 6px; font-size:var(--fs-lg); }
+.rebase-decision-card__head p { margin:0; color:var(--muted); line-height:1.55; }
+.rebase-decision-card code { font-family:var(--font-mono); }
+.rebase-scenario-letter {
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:1px solid var(--accent-line);
+  background:var(--accent-soft);
+  color:var(--accent);
+  font:var(--fw-heavy) var(--fs-md) var(--font-mono);
+}
+.rebase-decision-history {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:var(--sp-3);
+}
+.rebase-decision-history > div {
+  display:grid;
+  gap:7px;
+  padding:var(--sp-3);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  background:var(--surface-2);
+}
+.rebase-decision-history b { font-size:var(--fs-xs); }
+.rebase-decision-history code {
+  color:var(--text-soft);
+  font:var(--fw-semibold) var(--fs-xs) var(--font-mono);
+}
+.rebase-decision-question { display:grid; gap:var(--sp-3); }
+.rebase-decision-question > strong { font-size:var(--fs-md); }
+.rebase-decision-choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--sp-3); }
+.rebase-decision-choice {
+  appearance:none;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr);
+  gap:var(--sp-3);
+  align-items:center;
+  min-height:86px;
+  padding:var(--sp-3);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  background:var(--surface);
+  color:var(--text);
+  text-align:left;
+  cursor:pointer;
+  transition:border-color var(--dur-200) var(--ease), background var(--dur-200) var(--ease), transform var(--dur-200) var(--ease);
+}
+.rebase-decision-choice:hover { border-color:var(--accent-line); transform:translateY(-1px); }
+.rebase-decision-choice > span {
+  display:grid;
+  place-items:center;
+  width:40px;
+  height:40px;
+  border-radius:var(--r-md);
+  background:var(--surface-2);
+  color:var(--accent);
+}
+.rebase-decision-choice strong { display:block; margin-bottom:4px; }
+.rebase-decision-choice small { color:var(--muted); line-height:1.45; }
+.rebase-decision-choice.is-best { border-color:color-mix(in srgb,var(--good) 42%,var(--border)); background:var(--good-soft); }
+.rebase-decision-choice.is-warning { border-color:color-mix(in srgb,var(--warn) 45%,var(--border)); background:var(--warn-soft); }
+.rebase-choice-consequence {
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr);
+  gap:var(--sp-3);
+  padding:var(--sp-4);
+  border:1px solid var(--border);
+  border-radius:var(--r-lg);
+  background:var(--surface-2);
+}
+.rebase-choice-consequence > svg { margin-top:2px; }
+.rebase-choice-consequence p { margin:5px 0 3px; color:var(--text-soft); line-height:1.55; }
+.rebase-choice-consequence small { color:var(--muted); line-height:1.45; }
+.rebase-choice-consequence.is-good { border-color:color-mix(in srgb,var(--good) 38%,var(--border)); background:var(--good-soft); }
+.rebase-choice-consequence.is-good > svg { color:var(--good); }
+.rebase-choice-consequence.is-warning { border-color:color-mix(in srgb,var(--warn) 40%,var(--border)); background:var(--warn-soft); }
+.rebase-choice-consequence.is-warning > svg { color:var(--warn); }
+.rebase-choice-consequence.is-neutral > svg { color:var(--info); }
+
+.rebase-decision-summary {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(320px,.9fr);
+  gap:var(--sp-4);
+  padding:var(--sp-5);
+  border:1px solid color-mix(in srgb,var(--good) 40%,var(--border));
+  border-radius:var(--r-xl);
+  background:var(--good-soft);
+}
+.rebase-decision-summary h3 { margin:5px 0 7px; }
+.rebase-decision-summary p { margin:0; color:var(--text-soft); line-height:1.55; }
+.rebase-decision-summary__rows { display:grid; gap:8px; }
+.rebase-decision-summary__rows span {
+  display:grid;
+  grid-template-columns:110px minmax(0,1fr);
+  gap:10px;
+  padding:10px 12px;
+  border-radius:var(--r-md);
+  background:color-mix(in srgb,var(--surface) 82%,transparent);
+}
+.rebase-decision-summary__rows em { color:var(--muted); font-style:normal; line-height:1.4; }
+
+@media (max-width: 900px) {
+  .rebase-chapter-intro,
+  .rebase-decision-card__head,
+  .rebase-identity-explain__lead,
+  .rebase-decision-intro { grid-template-columns:1fr; }
+  .rebase-parent-story,
+  .rebase-decision-summary { grid-template-columns:1fr; }
+  .rebase-parent-story__arrow > .lucide-arrow-right { transform:rotate(90deg); }
+  .rebase-decision-history,
+  .rebase-decision-choices { grid-template-columns:1fr; }
+}
+
+.beat[data-kind="rebaseIntro"].is-past {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.beat[data-kind="rebaseIntro"] .beat__confirm .btn { animation: none; }
+.rebase-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-6);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+}
+.rebase-intro__icon {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.rebase-intro__text {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+@media (max-width: 620px) {
+  .rebase-intro { align-items: flex-start; padding: var(--sp-5); }
+  .rebase-intro__icon { width: 54px; height: 54px; }
+}

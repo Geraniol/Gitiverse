@@ -1,0 +1,682 @@
+/* Chapter 8 - detailed merge-conflict lab. Reuses the course tokens/layout. */
+.conflict-guide { display: grid; gap: var(--sp-4); }
+.conflict-board { display: grid; gap: var(--sp-4); }
+.conflict-next-step {
+  display: flex; align-items: flex-start; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-lg);
+  background: color-mix(in srgb,var(--accent-soft) 45%,var(--surface));
+}
+.conflict-next-step > svg { flex: none; color: var(--accent); margin-top: 2px; }
+.conflict-next-step > div { display: grid; gap: 3px; }
+.conflict-next-step strong { font-size: var(--fs-xs); }
+.conflict-next-step span { color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; }
+.conflict-card {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.conflict-card__head {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border);
+}
+.conflict-card__head > div { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; }
+.conflict-card__head > div > svg { color: var(--accent); }
+.conflict-card__head strong { font-size: var(--fs-xs); font-weight: var(--fw-bold); color: var(--text-soft); }
+
+/* Internal teaching sequence */
+.conflict-phase-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(130px,1fr));
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+}
+.conflict-phase {
+  position: relative;
+  display: flex; align-items: center; gap: var(--sp-2);
+  min-width: 0; padding: 9px 10px;
+  border-radius: calc(var(--r-lg) - 4px);
+  color: var(--faint); font-size: var(--fs-xs); font-weight: var(--fw-semibold);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.conflict-phase.is-active { color: var(--text); background: var(--surface); box-shadow: var(--shadow-1); }
+.conflict-phase.is-done { color: var(--good); }
+.conflict-phase__dot {
+  display: grid; place-items: center; flex: none; width: 23px; height: 23px;
+  border: 1px solid var(--border-firm); border-radius: 50%; background: var(--surface);
+  font: var(--fw-bold) var(--fs-cap) var(--font-mono);
+}
+.conflict-phase.is-active .conflict-phase__dot { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.conflict-phase.is-done .conflict-phase__dot { border-color: color-mix(in srgb,var(--good) 50%,var(--border)); background: var(--good-soft); }
+
+.conflict-teach-callout,
+.conflict-agreement,
+.conflict-marker-note,
+.conflict-principle {
+  display: flex; gap: var(--sp-3); align-items: flex-start;
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  animation: fade-rise var(--dur) var(--ease) both;
+}
+.conflict-teach-callout__icon,
+.conflict-meaning-icon {
+  display: grid; place-items: center; flex: none; width: 46px; height: 46px;
+  border-radius: 50%; background: var(--surface); color: var(--accent); box-shadow: var(--shadow-1);
+}
+.conflict-teach-callout > div:last-child,
+.conflict-agreement > div,
+.conflict-marker-note > div,
+.conflict-principle > div { display: grid; gap: 3px; }
+.conflict-teach-callout strong,.conflict-agreement strong,.conflict-marker-note strong,.conflict-principle strong { font-size: var(--fs-xs); }
+.conflict-teach-callout span,.conflict-agreement p,.conflict-marker-note span,.conflict-principle span { color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; }
+.conflict-agreement > svg,.conflict-marker-note > svg,.conflict-principle > svg { color: var(--accent); margin-top: 2px; }
+
+/* Branch labels + graph */
+.conflict-branch-pill {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 5px 8px; border: 1px solid var(--border); border-radius: var(--r-pill);
+  background: var(--surface-2); color: var(--muted); font: 650 var(--fs-xs) var(--font-mono); white-space: nowrap;
+}
+.conflict-branch-pill--main { border-color: var(--accent-line); background: var(--accent-soft); color: var(--accent); }
+.conflict-branch-pill--feature { border-color: color-mix(in srgb,var(--info) 32%,var(--border)); background: var(--info-soft); color: var(--info); }
+.conflict-branch-pill.is-current { box-shadow: inset 0 0 0 1px currentColor; }
+.conflict-merge-status,
+.conflict-case-status,
+.conflict-editor-status,
+.conflict-state-summary,
+.conflict-tab-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 8px; border-radius: var(--r-pill);
+  background: var(--surface-2); color: var(--muted); font-size: var(--fs-xs); white-space: nowrap;
+}
+.conflict-merge-status.is-conflict,.conflict-case-status:has(.lucide-triangle-alert),.conflict-tab-badge,.conflict-editor-status--conflict { background: var(--warn-soft); color: var(--warn); }
+.conflict-merge-status.is-done,.conflict-editor-status--done,.conflict-state-summary--done { background: var(--good-soft); color: var(--good); }
+.conflict-merge-status.is-working,.conflict-editor-status--working,.conflict-state-summary--working { background: var(--info-soft); color: var(--info); }
+.conflict-editor-status--resolved,.conflict-state-summary--resolved { background: var(--info-soft); color: var(--info); }
+.conflict-editor-status--staged,.conflict-state-summary--staged { background: var(--accent-soft); color: var(--accent); }
+.conflict-editor-status--warn,.conflict-state-summary--warn { background: var(--warn-soft); color: var(--warn); }
+.conflict-merge-status.is-working svg,.conflict-editor-status--working svg,.conflict-final-caption > svg.lucide-loader-circle { animation: spin-slow var(--dur-1100) linear infinite; }
+
+.conflict-history {
+  position: relative;
+  margin: var(--sp-4);
+  padding: var(--sp-3);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-lg);
+  background:
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(0deg, var(--grid-line) 1px, transparent 1px),
+    var(--surface-2);
+  background-size: 34px 34px;
+}
+.conflict-history .gframe { --g-max: 270px; }
+
+/* Lane name: says whose line this is, not a property of a commit, so it is not on a node. */
+.conflict-lane-label {
+  position: absolute;
+  z-index: var(--z-3);
+  padding: 4px 8px;
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-cap);
+  font-weight: var(--fw-bold);
+  white-space: nowrap;
+  transform: translateY(-50%);
+}
+.conflict-lane-label.lane-main { left: 2%; top: 27%; color: var(--accent-text); border-color: var(--accent-line); }
+.conflict-lane-label.lane-feature { left: 2%; top: 73%; color: var(--info-text); border-color: color-mix(in srgb, var(--info) 30%, var(--border)); }
+
+/* Not-yet-shown commits: dimmed and slightly scaled, not display:none, so the
+   position is kept and the reader can see one will grow here. */
+.conflict-history .gnode.is-hidden { opacity: .12; transform: translate(-50%, -50%) scale(.72); }
+
+/* The merge edges do not exist before the merge, so they start hidden.
+   WARNING: they grow via stroke-dashoffset (gedge-draw in chapter.css), not
+   transform: scaleX(), which would squash the caps and radius. */
+.conflict-history .gedge--merge { opacity: 0; }
+.conflict-history .gnode--merge { opacity: 0; }
+.conflict-history.is-merging .gedge--merge { opacity: .75; stroke: var(--accent); animation: conflict-path-pulse var(--dur-720) var(--ease) infinite; }
+.conflict-history.is-merging .conflict-collision-badge { opacity: .45; transform: translate(-50%, -50%) scale(.9); }
+.conflict-history.is-conflicted .gedge--merge { opacity: .38; stroke: var(--warn); }
+.conflict-history.is-conflicted .conflict-collision-badge { opacity: 1; transform: translate(-50%, -50%) scale(1); animation: pulse-ring var(--dur-1200) var(--ease) 2; }
+.conflict-history.is-merged .gedge--merge { opacity: 1; animation: gedge-draw var(--dur-620) var(--ease) both; }
+.conflict-history.is-merged .gnode--merge { opacity: 1; animation: gnode-pop var(--dur-520) var(--ease-out-back) var(--dur-260) both; }
+.conflict-history.is-merged .conflict-collision-badge { display: none; }
+
+/* "same line": both edits landed on the same line, so they cannot merge. It is a
+   verdict about this moment, not a graph node, so it floats over the edges. */
+.conflict-collision-badge {
+  position: absolute;
+  z-index: var(--z-5);
+  left: 74%;
+  top: 44%;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 9px;
+  border: var(--bw) solid color-mix(in srgb, var(--warn) 45%, var(--border));
+  border-radius: var(--r-pill);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.75);
+}
+
+/* Legend: two rows of branch pills saying which line each one belongs to. */
+.conflict-branch-legend { display: flex; flex-wrap: wrap; gap: var(--sp-2); padding: 0 var(--sp-5) var(--sp-4); }
+/* 8.1 collision */
+.conflict-collision-wrap,.conflict-markers-wrap,.conflict-resolve-wrap,.conflict-meaning-wrap { display: grid; gap: var(--sp-4); }
+.conflict-collision-layout { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(300px,.75fr); gap: var(--sp-4); align-items: stretch; }
+.conflict-story-panel { display: grid; gap: var(--sp-4); align-content: start; padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); }
+.conflict-story-head { display: grid; gap: var(--sp-2); }
+.conflict-story-head strong { font-size: var(--fs-md); }
+/* Base cell: the tree shows what the repo holds, the line below shows the text.
+   FileTree draws structure only, so the code line stays under the tree. */
+.conflict-story-base { display: grid; gap: var(--sp-2); }
+.conflict-base-line { margin: 0; padding: 0 var(--sp-2); color: var(--muted); font-size: var(--fs-xs); }
+.conflict-base-line code { color: var(--text-soft); font: 650 var(--fs-xs) var(--font-mono); }
+.conflict-story-actions { display: grid; gap: var(--sp-2); }
+.conflict-story-actions .btn { justify-content: center; }
+.conflict-story-note { display: flex; gap: var(--sp-2); align-items: flex-start; color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; }
+.conflict-story-note svg { color: var(--accent); margin-top: 2px; }
+.conflict-version-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--sp-4); }
+.conflict-version { opacity: .38; transform: translateY(6px); transition: opacity var(--dur-slow) var(--ease),transform var(--dur-slow) var(--ease),border-color var(--dur) var(--ease); }
+.conflict-version.is-active { opacity: 1; transform: none; animation: fade-rise var(--dur-slow) var(--ease) var(--card-delay) both; }
+.conflict-version--main.is-active { border-color: var(--accent-line); }
+.conflict-version--feature.is-active { border-color: color-mix(in srgb,var(--info) 35%,var(--border)); }
+.conflict-mini-editor { overflow: hidden; border-radius: 0 0 var(--r-xl) var(--r-xl); background: var(--surface-sunk); }
+.conflict-mini-editor__bar { display: flex; align-items: center; gap: 6px; padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface-3); }
+.conflict-mini-editor__bar > span { width: 8px; height: 8px; border-radius: 50%; background: var(--border-firm); }
+.conflict-mini-editor__bar b { margin-left: 6px; color: var(--muted); font: var(--fw-semibold) var(--fs-xs) var(--font-mono); }
+.conflict-code-row { display: grid; grid-template-columns: 34px minmax(0,1fr); gap: var(--sp-3); padding: 7px 14px; font: var(--fs-xs)/1.55 var(--font-mono); }
+.conflict-code-row > span { color: var(--faint); text-align: right; }
+.conflict-code-row.is-removed { color: var(--bad); background: color-mix(in srgb,var(--bad-soft) 70%,transparent); text-decoration: line-through; opacity: .75; }
+.conflict-code-row.is-changed { color: var(--good); background: color-mix(in srgb,var(--good-soft) 65%,transparent); box-shadow: inset 3px 0 var(--good); animation: conflict-highlight var(--dur-860) var(--ease) both; }
+.conflict-overlap { position: relative; height: 34px; display: grid; place-items: center; opacity: 0; transition: opacity var(--dur) var(--ease); }
+.conflict-overlap.is-visible { opacity: 1; }
+.conflict-overlap__line { position: absolute; left: 22%; right: 22%; top: 50%; height: 2px; background: linear-gradient(90deg,var(--accent),var(--warn),var(--info)); opacity: .65; }
+.conflict-overlap span { position: relative; z-index: var(--z-1); display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: var(--r-pill); background: var(--warn-soft); color: var(--warn); font-size: var(--fs-xs); font-weight: var(--fw-bold); }
+.conflict-merge-zone { display: grid; grid-template-columns: minmax(230px,.7fr) minmax(0,1.3fr); gap: var(--sp-4); align-items: stretch; padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface-2); transition: border-color var(--dur) var(--ease),background var(--dur) var(--ease); }
+.conflict-merge-zone.is-ready { border-color: var(--accent-line); background: color-mix(in srgb,var(--accent-soft) 35%,var(--surface)); }
+.conflict-merge-zone.is-conflict { border-color: color-mix(in srgb,var(--warn) 42%,var(--border)); background: color-mix(in srgb,var(--warn-soft) 45%,var(--surface)); }
+.conflict-merge-zone__copy { display: grid; align-content: center; gap: var(--sp-2); padding: var(--sp-3); }
+.conflict-merge-zone__copy strong { font-size: var(--fs-md); }
+.conflict-merge-zone__copy p { color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; }
+
+/* terminal */
+.conflict-live-dot { display: inline-flex; align-items: center; gap: 6px; color: var(--faint); font-size: var(--fs-xs); }
+.conflict-live-dot i { width: 7px; height: 7px; border-radius: 50%; background: var(--good); animation: glow-pulse var(--dur-1400) ease-in-out infinite; }
+
+/* 8.2 marker reader */
+.conflict-markers-layout { display: grid; grid-template-columns: 1fr; gap: var(--sp-3); align-items: start; }
+.conflict-ide { overflow: hidden; border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); }
+.conflict-ide__top { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); background: var(--surface-3); }
+.conflict-ide__top > div { display: flex; align-items: center; gap: var(--sp-2); }
+.conflict-ide__top > div svg { color: var(--accent); }
+/* Wider sidebar: the tree indents by level, so 180px truncated "index.html". */
+.conflict-ide__body { display: grid; grid-template-columns: 220px minmax(0,1fr); min-height: 320px; }
+/* The IDE sidebar is a shell; the tree inside is FileTree (see file-tree.js). */
+.conflict-ide__sidebar { padding: var(--sp-3); border-right: 1px solid var(--border); background: var(--surface-2); }
+.conflict-code-editor { position: relative; padding: var(--sp-4) 0; background: var(--surface-sunk); overflow: auto; }
+.conflict-editor-empty { min-height: 280px; display: grid; place-items: center; align-content: center; gap: var(--sp-3); padding: var(--sp-5); text-align: center; color: var(--muted); }
+.conflict-editor-empty > svg { color: var(--accent); }
+.conflict-editor-empty strong { color: var(--text); }
+.conflict-editor-empty span { font-size: var(--fs-xs); }
+.conflict-marker-zone { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; align-items: center; gap: var(--sp-3); width: calc(100% - 20px); margin: 4px 10px; padding: 9px 10px; border: 1px solid transparent; border-radius: var(--r-sm); background: transparent; color: var(--text-soft); text-align: left; cursor: pointer; animation: conflict-marker-enter var(--dur-420) var(--ease) both; }
+.conflict-marker-zone:nth-of-type(2) { animation-delay: var(--dur-100); }
+.conflict-marker-zone:nth-of-type(3) { animation-delay: var(--dur-100); }
+.conflict-marker-zone:nth-of-type(4) { animation-delay: var(--dur-180); }
+.conflict-marker-zone:nth-of-type(5) { animation-delay: var(--dur-260); }
+.conflict-marker-zone:nth-of-type(6) { animation-delay: var(--dur-340); }
+.conflict-marker-zone:hover,.conflict-marker-zone.is-focus { border-color: var(--accent-line); background: var(--accent-soft); }
+.conflict-marker-zone.is-seen { border-color: color-mix(in srgb,var(--good) 40%,var(--border)); }
+.conflict-marker-zone.is-marker { color: var(--warn); background: color-mix(in srgb,var(--warn-soft) 55%,transparent); }
+.conflict-marker-zone.is-current { background: color-mix(in srgb,var(--accent-soft) 62%,transparent); box-shadow: inset 3px 0 var(--accent); }
+.conflict-marker-zone.is-incoming { background: color-mix(in srgb,var(--info-soft) 62%,transparent); box-shadow: inset 3px 0 var(--info); }
+.conflict-line-no { color: var(--faint); font: var(--fs-xs) var(--font-mono); text-align: right; }
+.conflict-marker-zone code { font: 650 var(--fs-xs) var(--font-mono); overflow-wrap: anywhere; }
+.conflict-zone-tag { display: inline-flex; align-items: center; gap: 5px; color: var(--faint); font-size: var(--fs-cap); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: .05em; }
+.conflict-marker-zone.is-seen .conflict-zone-tag { color: var(--good); }
+.conflict-marker-zone { position: relative; overflow: visible; }
+.conflict-marker-tooltip {
+  position: absolute;
+  z-index: 20;
+  left: 50%;
+  top: auto;
+  bottom: calc(100% + 8px);
+  width: min(380px, calc(100% - 32px));
+  transform: translateX(-50%);
+  display: none;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+  text-transform: none;
+  letter-spacing: normal;
+  pointer-events: none;
+}
+.conflict-marker-tooltip strong { font: 700 var(--fs-xs) var(--font-mono); color: var(--accent); }
+.conflict-marker-tooltip span { color: var(--muted); font-size: var(--fs-cap); line-height: 1.45; }
+.conflict-marker-zone:hover .conflict-marker-tooltip,
+.conflict-marker-zone:focus-visible .conflict-marker-tooltip { display: grid; }
+.conflict-marker-zone.is-tip-up .conflict-marker-tooltip { top: auto; bottom: calc(100% + 8px); }
+.conflict-marker-mini-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 10px var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb,var(--info-soft) 45%,var(--surface));
+}
+.conflict-marker-mini-guide > div { display: grid; gap: 2px; }
+.conflict-marker-mini-guide strong { font-size: var(--fs-xs); }
+.conflict-marker-mini-guide span { color: var(--muted); font-size: var(--fs-cap); }
+.conflict-marker-count { flex: 0 0 auto; font: 650 var(--fs-cap) var(--font-mono); color: var(--faint) !important; }
+.conflict-marker-summary {
+  display: grid;
+  grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr);
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.conflict-marker-summary__map,.conflict-marker-summary__focus { display: grid; gap: 5px; }
+.conflict-marker-summary__map span,.conflict-marker-summary__focus span { color: var(--muted); font-size: var(--fs-xs); line-height: 1.5; }
+.conflict-marker-summary__map code,.conflict-marker-summary__focus code { font-family: var(--font-mono); color: var(--accent); }
+.conflict-marker-summary__focus { grid-template-columns: 20px minmax(0,1fr); align-items: start; padding-left: var(--sp-3); border-left: 1px solid var(--border); }
+.conflict-marker-summary__focus > svg { color: var(--accent); margin-top: 2px; }
+.conflict-marker-summary__focus > div { display: grid; gap: 4px; }
+.conflict-marker-summary__focus.is-muted { color: var(--muted); }
+.conflict-ide__status { display: flex; justify-content: space-between; gap: var(--sp-3); padding: 7px var(--sp-4); border-top: 1px solid var(--border); background: var(--info-soft); color: var(--text-soft); font-size: var(--fs-xs); }
+.conflict-ide__status span { display: flex; align-items: center; gap: 6px; }
+.conflict-inspector { display: flex; flex-direction: column; gap: var(--sp-4); padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); }
+.conflict-inspector__head { display: flex; justify-content: space-between; gap: var(--sp-2); align-items: center; }
+.conflict-inspector__head b { color: var(--faint); font: 650 var(--fs-xs) var(--font-mono); }
+.conflict-inspector__empty,.conflict-inspector__focus { display: grid; gap: var(--sp-3); align-content: center; min-height: 190px; padding: var(--sp-4); border: 1px dashed var(--border-firm); border-radius: var(--r-lg); background: var(--surface-2); animation: fade-rise var(--dur) var(--ease) both; }
+.conflict-inspector__empty svg,.conflict-inspector__focus > svg { color: var(--accent); }
+.conflict-inspector__empty p,.conflict-inspector__focus p { color: var(--muted); font-size: var(--fs-xs); line-height: 1.6; }
+.conflict-inspector__focus code { color: var(--accent); font: var(--fw-bold) var(--fs-xs) var(--font-mono); overflow-wrap: anywhere; }
+.conflict-marker-progress { display: grid; gap: var(--sp-2); margin-top: auto; }
+.conflict-marker-progress > div { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: var(--sp-2); align-items: center; padding: var(--sp-2) var(--sp-3); border-radius: var(--r-sm); color: var(--muted); background: var(--surface-2); font-size: var(--fs-xs); transition: background var(--dur) var(--ease),color var(--dur) var(--ease); }
+.conflict-marker-progress > div.is-seen { background: var(--good-soft); color: var(--good); }
+.conflict-reading-check { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: var(--sp-4); align-items: center; padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); animation: fade-rise var(--dur) var(--ease) both; }
+.conflict-reading-check > div:first-child { display: grid; gap: 5px; }
+.conflict-reading-check > div:first-child p { color: var(--muted); font-size: var(--fs-xs); }
+.conflict-reading-options { display: flex; flex-wrap: wrap; gap: var(--sp-2); justify-content: flex-end; }
+.conflict-choice { font-family: var(--font-mono); }
+.conflict-choice.is-correct { border-color: var(--good); background: var(--good-soft); color: var(--good); }
+.conflict-choice.is-wrong { border-color: var(--warn); background: var(--warn-soft); animation: shake-x var(--dur) var(--ease); }
+
+/* 8.3 resolve */
+.conflict-agreement { border-color: color-mix(in srgb,var(--info) 30%,var(--border)); background: var(--info-soft); }
+.conflict-agreement > svg { color: var(--info); }
+.conflict-resolve-layout { display: grid; grid-template-columns: minmax(0,1.18fr) minmax(320px,.82fr); gap: var(--sp-4); align-items: start; }
+.conflict-resolve-editor { overflow: hidden; }
+.conflict-resolution-tools { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--border); background: var(--surface-2); }
+.conflict-resolution-tools > span { margin-right: auto; color: var(--muted); font-size: var(--fs-xs); font-weight: var(--fw-bold); }
+.conflict-resolution-tools .btn { min-height: var(--ctl-md-h); padding: 6px 10px; font-size: var(--fs-xs); box-shadow: none; }
+.conflict-editor-shell { display: grid; grid-template-columns: 44px minmax(0,1fr); min-height: 370px; background: var(--surface-sunk); }
+.conflict-editor-gutter { padding: var(--sp-5) 10px; border-right: 1px solid var(--border); color: var(--faint); font: var(--fs-xs)/1.8 var(--font-mono); text-align: right; user-select: none; }
+.conflict-textarea { width: 100%; min-height: 370px; resize: vertical; border: 0; outline: 0; padding: var(--sp-5); background: transparent; color: var(--text-soft); font: var(--fs-xs)/1.8 var(--font-mono); }
+.conflict-textarea:focus { box-shadow: inset 0 0 0 2px var(--accent); }
+.conflict-textarea:disabled { opacity: .72; }
+.conflict-editor-foot { display: flex; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-3) var(--sp-4); border-top: 1px solid var(--border); color: var(--muted); font-size: var(--fs-xs); }
+.conflict-editor-foot span,.conflict-editor-foot strong { display: flex; align-items: center; gap: 6px; }
+.conflict-editor-foot strong { color: var(--good); }
+.conflict-resolve-side { display: grid; gap: var(--sp-4); }
+.conflict-state-card { overflow: hidden; }
+.conflict-state-flow { padding: var(--sp-4); }
+.conflict-state-explain { display: grid; gap: 7px; padding: 0 var(--sp-4) var(--sp-4); }
+.conflict-state-explain span { display: grid; grid-template-columns: 18px 58px minmax(0,1fr); align-items: center; gap: 6px; color: var(--muted); font-size: var(--fs-xs); }
+.conflict-state-explain span svg { color: var(--accent); }
+.conflict-state-explain b { color: var(--text-soft); }
+.conflict-final-history { display: grid; gap: var(--sp-3); animation: fade-rise var(--dur-slow) var(--ease) both; }
+.conflict-final-history.is-building .conflict-card { border-color: color-mix(in srgb,var(--info) 35%,var(--border)); }
+.conflict-final-history.is-complete .conflict-card { border-color: color-mix(in srgb,var(--good) 35%,var(--border)); }
+.conflict-final-caption { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4) var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface); }
+.conflict-final-caption > svg { color: var(--good); }
+.conflict-final-caption > div { display: grid; gap: 3px; }
+.conflict-final-caption span { color: var(--muted); font-size: var(--fs-xs); }
+
+/* 8.4 meaning */
+.conflict-meaning-intro { display: grid; grid-template-columns: 72px minmax(0,1fr); gap: var(--sp-4); align-items: center; padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); }
+.conflict-meaning-icon { width: 64px; height: 64px; background: var(--accent-soft); }
+.conflict-meaning-intro h2 { margin: var(--sp-2) 0; font-size: var(--fs-lg); }
+.conflict-meaning-intro p { color: var(--muted); font-size: var(--fs-xs); line-height: 1.65; }
+.conflict-compare-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--sp-4); }
+.conflict-compare-case { display: grid; gap: var(--sp-3); padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); transition: border-color var(--dur) var(--ease),transform var(--dur-fast) var(--ease); }
+.conflict-compare-case.is-complete { border-color: color-mix(in srgb,var(--good) 45%,var(--border)); }
+.conflict-compare-case.is-paused { border-color: color-mix(in srgb,var(--warn) 45%,var(--border)); }
+.conflict-compare-case__head { display: flex; justify-content: space-between; gap: var(--sp-3); align-items: flex-start; }
+.conflict-compare-case__head > div { display: grid; gap: 4px; }
+.conflict-compare-case__head strong { font-size: var(--fs-md); }
+.conflict-compare-case > p { color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; }
+.conflict-compare-editors { display: grid; grid-template-columns: minmax(0,1fr) 24px minmax(0,1fr); gap: var(--sp-2); align-items: center; }
+.conflict-compare-editors code { min-width: 0; padding: var(--sp-3); border-radius: var(--r-sm); background: var(--surface-sunk); font: var(--fs-xs)/1.5 var(--font-mono); overflow-wrap: anywhere; }
+/* Between the two editors, a `.gconn` (chapter.css section 26) sized by its own
+   column, so it adds no gap of its own. */
+.conflict-compare-editors__arrow { color: var(--muted); }
+/* A .gframe like the rest of the history pictures; only the state colours and
+   the height are its own. The result is a .gnode carrying an icon. */
+.conflict-mini-merge-visual { aspect-ratio: auto; height: 122px; border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface-2); }
+.conflict-mini-merge-visual__result { border-color: var(--border-firm); color: var(--muted); }
+.conflict-mini-merge-visual__result svg { width: 16px; height: 16px; }
+.conflict-mini-merge-visual.is-running .gedge { stroke: var(--accent); animation: conflict-path-pulse var(--dur-620) var(--ease) infinite; }
+.conflict-mini-merge-visual.is-running .conflict-mini-merge-visual__result { border-color: var(--accent); }
+.conflict-mini-merge-visual.is-complete .gedge { stroke: var(--good); opacity: 1; }
+.conflict-mini-merge-visual.is-complete .conflict-mini-merge-visual__result { border-color: var(--good); background: var(--good-soft); color: var(--good); }
+.conflict-mini-merge-visual.is-paused .gedge { stroke: var(--warn); opacity: .75; }
+.conflict-mini-merge-visual.is-paused .conflict-mini-merge-visual__result { border-color: var(--warn); background: var(--warn-soft); color: var(--warn); }
+.conflict-case-result { display: flex; gap: var(--sp-2); align-items: flex-start; padding: var(--sp-3); border-radius: var(--r-md); background: var(--surface-2); color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; animation: fade-rise var(--dur) var(--ease) both; }
+.conflict-case-result > svg { color: var(--accent); margin-top: 1px; }
+.conflict-concept-check { display: grid; gap: var(--sp-4); padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); animation: fade-rise var(--dur) var(--ease) both; }
+.conflict-concept-check > div:first-child { display: grid; gap: var(--sp-2); }
+.conflict-concept-check > div:first-child strong { font-size: var(--fs-md); }
+.conflict-concept-options { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--sp-3); }
+.conflict-concept-option { display: grid; grid-template-columns: 28px minmax(0,1fr); gap: var(--sp-3); align-items: start; padding: var(--sp-4); border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--surface-2); color: var(--text); text-align: left; cursor: pointer; transition: transform var(--dur-fast) var(--ease),border-color var(--dur-fast) var(--ease),background var(--dur-fast) var(--ease); }
+.conflict-concept-option:hover { border-color: var(--accent-line); }
+.conflict-concept-option > svg { color: var(--accent); }
+.conflict-concept-option span { display: grid; gap: 4px; }
+.conflict-concept-option small { color: var(--muted); line-height: 1.45; }
+.conflict-concept-option.is-correct { border-color: var(--good); background: var(--good-soft); }
+.conflict-concept-option.is-wrong { border-color: var(--warn); background: var(--warn-soft); animation: shake-x var(--dur) var(--ease); }
+
+@keyframes conflict-highlight { 0% { background: transparent; box-shadow: inset 0 0 transparent; } 55% { background: color-mix(in srgb,var(--good-soft) 90%,transparent); } 100% { background: color-mix(in srgb,var(--good-soft) 65%,transparent); box-shadow: inset 3px 0 var(--good); } }
+@keyframes conflict-marker-enter { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+@keyframes conflict-path-pulse { 0%,100% { opacity: .35; } 50% { opacity: 1; } }
+/* Reveal a line by drawing it, the way every other graph does (`pathLength="1"`
+   + `stroke-dashoffset`). WARNING: do not animate `transform` here - it would
+   replace a placement transform on the element and squash the caps. */
+@keyframes conflict-svg-line-draw {
+  from { stroke-dashoffset: 1; opacity: .35; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+/* `conflict-file-fly` was removed with its element: flying-file animations
+   imply the wrong model - git add is not moving a file, it changes the state of
+   one path in two areas. */
+
+@media (max-width: 1080px) {
+  .conflict-collision-layout,.conflict-resolve-layout,.conflict-markers-layout { grid-template-columns: 1fr; }
+  .conflict-merge-zone { grid-template-columns: 1fr; }
+  .conflict-inspector { min-height: 0; }
+  .conflict-reading-check { grid-template-columns: 1fr; }
+  .conflict-reading-options { justify-content: flex-start; }
+}
+@media (max-width: 1080px) {
+  .conflict-version-grid,.conflict-compare-grid,.conflict-concept-options { grid-template-columns: 1fr; }
+  .conflict-ide__body { grid-template-columns: 1fr; }
+  .conflict-ide__sidebar { border-right: 0; border-bottom: 1px solid var(--border); }
+  .conflict-state-explain span { grid-template-columns: 18px 62px minmax(0,1fr); }
+  .conflict-meaning-intro { grid-template-columns: 1fr; }
+  .conflict-meaning-icon { width: 54px; height: 54px; }
+}
+@media (max-width: 620px) {
+  .conflict-card__head { padding: var(--sp-3) var(--sp-4); align-items: flex-start; flex-direction: column; }
+  .conflict-resolution-tools > span { width: 100%; }
+  .conflict-editor-foot { flex-direction: column; }
+  .conflict-phase-strip { grid-template-columns: 1fr 1fr; }
+  .conflict-compare-editors { grid-template-columns: 1fr; }
+  .conflict-compare-editors__arrow > .lucide-arrow-right { transform: rotate(90deg); }
+}
+
+
+/* Keep the opening card, but make it a normal stable title rather than an
+   animated/typed scene that fades and scales after Continue. */
+.beat[data-kind="conflictIntro"].is-past {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.beat[data-kind="conflictIntro"] .beat__confirm .btn { animation: none; }
+.conflict-intro {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-6);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+}
+.conflict-intro__icon {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.conflict-intro__text {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-semibold);
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+/* The terminal button must share the same control height and baseline as the
+   input. The generic button has its own vertical padding, which made Run look
+   a few pixels high after the terminal re-rendered. */
+.conflict-guide .gitterm__row { align-items: center; }
+.conflict-guide .gitterm__row .btn {
+  height: var(--ctl-md-h);
+  min-height: var(--ctl-md-h);
+  padding-top: 0;
+  padding-bottom: 0;
+  align-self: center;
+}
+.conflict-guide .gitterm__input { height: var(--ctl-md-h); }
+.conflict-guide .gitterm__log { max-height: 170px; }
+
+/* Immediate merge feedback lives beside the terminal so running the command
+   never forces the learner to scroll back to the large commit graph just to
+   see what happened. */
+.conflict-merge-preview {
+  display: grid;
+  gap: 8px;
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.conflict-merge-preview__flow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-wrap: wrap;
+  font-size: var(--fs-xs);
+}
+.conflict-merge-preview__flow > span:not(.conflict-merge-preview__plus):not(.conflict-merge-preview__arrow) {
+  padding: 4px 8px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-weight: var(--fw-bold);
+}
+.conflict-merge-preview__flow .is-main { color: var(--accent); background: var(--accent-soft); }
+.conflict-merge-preview__flow .is-feature { color: var(--info); background: var(--info-soft); }
+/* The arrow between the two sides is a `.gconn` (chapter.css section 26); the
+   flow row already spaces its children, so the connector adds no gap. */
+.conflict-merge-preview__plus,.conflict-merge-preview__arrow { color: var(--faint); }
+.conflict-merge-preview__flow strong { color: var(--text-soft); }
+.conflict-merge-preview p { margin: 0; color: var(--muted); font-size: var(--fs-xs); line-height: 1.5; }
+.conflict-merge-preview--merging {
+  border-color: var(--accent-line);
+  background: color-mix(in srgb,var(--accent-soft) 35%,var(--surface));
+}
+.conflict-merge-preview--merging .conflict-merge-preview__arrow { animation: nudge-x var(--dur-1200) var(--ease) infinite; }
+.conflict-merge-preview--conflict {
+  border-color: color-mix(in srgb,var(--warn) 42%,var(--border));
+  background: color-mix(in srgb,var(--warn-soft) 55%,var(--surface));
+}
+.conflict-merge-preview--conflict strong,.conflict-merge-preview--conflict .conflict-merge-preview__arrow { color: var(--warn); }
+
+/* Make the relationship between marker syntax and branches explicit before
+   asking the learner to answer the quick check. */
+.conflict-branch-map {
+  display: grid;
+  gap: 8px;
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.conflict-branch-map > div {
+  display: grid;
+  grid-template-columns: minmax(0,auto) 18px minmax(0,1fr);
+  gap: 7px;
+  align-items: center;
+  font-size: var(--fs-xs);
+}
+.conflict-branch-map > div > span:nth-child(2) { display: grid; place-items: center; color: var(--faint); }
+.conflict-branch-map__pill {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: var(--r-pill);
+  font: 650 var(--fs-cap) var(--font-mono);
+}
+.conflict-branch-map__pill.is-main { color: var(--accent); background: var(--accent-soft); }
+.conflict-branch-map__pill.is-feature { color: var(--info); background: var(--info-soft); }
+.conflict-branch-map p { margin: 2px 0 0; color: var(--muted); font-size: var(--fs-cap); line-height: 1.55; }
+.conflict-branch-map__title { font-size: var(--fs-xs); color: var(--text); }
+.conflict-branch-map__why code { font-family: var(--font-mono); color: var(--accent); }
+.conflict-marker-legend { display: grid !important; grid-template-columns: 1fr !important; gap: 5px !important; padding-top: 4px; }
+.conflict-marker-legend span { display: grid; grid-template-columns: minmax(180px,auto) minmax(0,1fr); gap: 8px; align-items: center; padding: 6px 8px; border-radius: var(--r-sm); background: var(--surface); }
+.conflict-marker-legend code { color: var(--text-soft); font: 650 var(--fs-cap) var(--font-mono); }
+.conflict-marker-legend small { color: var(--muted); font-size: var(--fs-cap); line-height: 1.35; }
+.conflict-zone-tag svg { color: currentColor; }
+
+/* Resolution choices are decisions about the final file, not mysterious Git
+   commands. Give each choice a plain-language outcome and highlight the team
+   decision without preventing exploration. */
+.conflict-resolution-tools {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.conflict-resolution-tools__intro {
+  grid-column: auto;
+  display: grid;
+  gap: 4px;
+  margin-bottom: 2px;
+}
+.conflict-resolution-tools__intro span { color: var(--muted); font-size: var(--fs-xs); line-height: 1.5; }
+.conflict-resolve-choice {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 100px minmax(0,1fr);
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: center;
+  text-align: left;
+  white-space: normal;
+  padding: 9px 12px;
+}
+.conflict-choice-badge { grid-row: 1 / span 2; display: inline-flex; justify-content: center; padding: 4px 7px; border-radius: var(--r-pill); background: var(--surface-3); color: var(--muted); font-size: var(--fs-cap); font-weight: var(--fw-bold); }
+.conflict-resolve-choice.is-recommended .conflict-choice-badge { background: var(--accent); color: white; }
+.conflict-resolve-choice strong { font-size: var(--fs-xs); }
+.conflict-resolve-choice small { color: var(--muted); font-size: var(--fs-cap); line-height: 1.35; }
+.conflict-resolve-choice.is-recommended {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+}
+.conflict-resolve-choice.is-recommended small { color: var(--accent); }
+
+/* Explain each typed command at the point of use and give an immediate
+   before -> after state summary, so the user never has to infer why the command
+   exists from terminal output alone. */
+.conflict-command-coach {
+  display: grid;
+  gap: 8px;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.conflict-command-coach__title { display: flex; align-items: center; gap: 7px; }
+.conflict-command-coach__title svg { color: var(--accent); }
+.conflict-command-coach p { margin: 0; color: var(--muted); font-size: var(--fs-xs); line-height: 1.55; }
+.conflict-command-parts { display: grid; gap: 6px; }
+.conflict-command-parts span {
+  display: grid;
+  grid-template-columns: minmax(150px,auto) minmax(0,1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+}
+.conflict-command-parts code { color: var(--accent); font: 650 var(--fs-cap) var(--font-mono); overflow-wrap: anywhere; }
+.conflict-command-parts small { color: var(--muted); font-size: var(--fs-cap); }
+.conflict-command-change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.conflict-command-change svg { color: var(--accent); }
+.conflict-command-change strong { color: var(--accent); }
+.conflict-command-change.is-done { background: var(--good-soft); }
+.conflict-command-change.is-done svg,.conflict-command-change.is-done strong { color: var(--good); }
+
+@media (max-width: 780px) {
+  .conflict-resolution-tools { grid-template-columns: 1fr; }
+  .conflict-resolution-tools__intro { grid-column: auto; }
+  .conflict-command-parts span { grid-template-columns: 1fr; }
+}
+
+.conflict-inspector { display:none !important; }
+
+.conflict-command-result {
+  display: grid;
+  grid-template-columns: 20px minmax(0,1fr);
+  gap: 9px;
+  align-items: start;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.conflict-command-result > svg { color: var(--accent); margin-top: 2px; }
+.conflict-command-result > div { display: grid; gap: 3px; }
+.conflict-command-result span { color: var(--muted); font-size: var(--fs-xs); line-height: 1.45; }
+.conflict-command-result code { font-family: var(--font-mono); color: var(--accent); }
+.conflict-command-result.is-done { border-color: color-mix(in srgb,var(--good) 35%,var(--border)); background: var(--good-soft); }
+.conflict-command-result.is-done > svg { color: var(--good); }
+.conflict-command-result.is-working > svg { animation: spin 1s linear infinite; }
+.conflict-dynamic-command { margin-top: 0; }
+
+@media (max-width: 900px) {
+  .conflict-marker-summary { grid-template-columns: 1fr; }
+  .conflict-marker-summary__focus { border-left: 0; border-top: 1px solid var(--border); padding-left: 0; padding-top: var(--sp-3); }
+  .conflict-resolve-choice { grid-template-columns: 86px minmax(0,1fr); }
+}
+
+/* Round 5: marker help always opens above the hovered row. */
+.conflict-marker-zone:hover,.conflict-marker-zone:focus-visible { z-index: 30; }

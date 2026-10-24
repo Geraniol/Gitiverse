@@ -1,0 +1,461 @@
+
+
+:root {
+
+  /* Durations, named by their own value. WARNING: these are not a designed
+     scale - just the durations this interface uses, each named so nothing
+     outside this block writes one. Clustering them changes how it MOVES. */
+  --dur-0: 0ms;
+  --dur-100: 100ms;
+  --dur-180: 180ms;
+  --dur-200: 200ms;
+  --dur-250: 250ms;
+  --dur-260: 260ms;
+  --dur-280: 280ms;
+  --dur-300: 300ms;
+  --dur-320: 320ms;
+  --dur-340: 340ms;
+  --dur-350: 350ms;
+  --dur-360: 360ms;
+  --dur-380: 380ms;
+  --dur-400: 400ms;
+  --dur-420: 420ms;
+  --dur-450: 450ms;
+  --dur-500: 500ms;
+  --dur-520: 520ms;
+  --dur-580: 580ms;
+  --dur-600: 600ms;
+  --dur-620: 620ms;
+  --dur-650: 650ms;
+  --dur-700: 700ms;
+  --dur-720: 720ms;
+  --dur-750: 750ms;
+  --dur-800: 800ms;
+  --dur-850: 850ms;
+  --dur-860: 860ms;
+  --dur-900: 900ms;
+  --dur-1000: 1000ms;
+  --dur-1080: 1080ms;
+  --dur-1100: 1100ms;
+  --dur-1200: 1200ms;
+  --dur-1400: 1400ms;
+  --dur-2400: 2400ms;
+  --dur-3500: 3500ms;
+  --fw-regular: 400;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-heavy: 800;
+  --fs-display: 2.75rem;
+  --fs-brand: 17px;
+  --fs-mono-sm: 0.9em;
+  --fs-mono-md: 0.92em;
+  --z-1: 1;
+  --z-2: 2;
+  --z-3: 3;
+  --z-4: 4;
+  --z-5: 5;
+  --z-6: 6;
+  --z-7: 7;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               "Noto Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+               "Liberation Mono", monospace;
+  --fs-xs: 0.75rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.375rem;
+  --fs-xl: 1.75rem;
+  --fs-2xl: 2.125rem;
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4rem;
+  --sp-icon: 7px;
+  --bar-h: 8px;
+  /* WARNING: the terminal log's max height - scroll past it, do not grow.
+     Without it, five commands in one step stretch the terminal to half the
+     screen and push the buttons down. 11rem ~ 176px ~ seven or eight lines. */
+  --term-log-max: 11rem;
+  --pip-w: 32px;
+  --sp-tight: 10px;
+  --bw: 1px;
+  --bw-rule: 3px;
+  --dur-fast: 100ms;
+  --dur-slide: 180ms;
+  --dur-ring: 650ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out-back: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --shell-topbar-h: 64px;
+  --shell-rail-w: 280px;
+  --shell-strip-w: 96px;
+  --shell-gutter: 24px;
+  --shell-content-max: 1060px;
+  --shell-footnav-h: 64px;
+  --ctl-sm-h: 38px;
+  --ctl-lg-h: 38px;
+  --act-h: 38px;
+  --ctl-sm-min: 52px;
+  --ctl-md-min: 64px;
+  --ctl-lg-min: 72px;
+  /* WARNING: the tool sizes --fs-tool-sm/md/lg (11.5 / 12.5 / 14px) were
+     removed: each sat within 1px of a reading size, so one label landed on two
+     sizes. Only `--fs-cap` (10px) and `--fs-xs` (12px) remain. */
+  --fs-cap: 10px;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-split: 30;
+  --z-fab: 40;
+  --z-panel: 50;
+  --z-popover: 60;
+  --z-sheet: 100;
+  --z-confirm: 130;
+  --z-modal: 140;
+  --z-toast: 200;
+  --gutter: 1.5rem;
+
+  --g-node: 34px;          /* a commit node, with its letter */
+  --g-node-sm: 14px;       /* a bare lane dot, no letter */
+  --g-node-lg: 40px;       /* the merge commit, deliberately bigger */
+  --g-node-border: 2px;
+  --g-edge: 2px;           /* a connector: edge, lane or arrow shaft */
+  --g-lane: 10px;          /* a branch lane's own bar (ch5) */
+  --g-max: 240px;          /* how tall a graph may render */
+  --g-label: var(--fs-cap);
+  --g-conn: 18px;
+  --g-conn-lg: 24px;
+  --g-node-dot: 4px;        /* the root commit's filled centre */
+  --g-node-head: 3px;       /* the HEAD ring */
+  --g-glow: color-mix(in srgb, var(--accent) 32%, transparent);
+  --g-glow-spread: 3px;
+  --g-ref-gap: 14px;        /* between a ref pill and its commit, where the leader runs */
+}
+
+:root {
+  --lt-shadow-3: 0 10px 34px -10px rgba(16, 24, 45, 0.24);
+  --dk-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --dk-shadow-3: 0 14px 40px -12px rgba(0, 0, 0, 0.75);
+  --lt-shadow-1: 0 1px 2px rgba(16, 24, 45, 0.05), 0 1px 3px rgba(16, 24, 45, 0.04);
+  --lt-shadow-2: 0 2px 4px rgba(16, 24, 45, 0.05), 0 8px 20px -6px rgba(16, 24, 45, 0.12);
+
+  --dk-shadow-2: 0 2px 6px rgba(0, 0, 0, 0.42), 0 10px 26px -8px rgba(0, 0, 0, 0.6);
+
+  --lt-accent: #e8542f;
+  --lt-accent-ink: #ffffff;
+  --lt-info: #3b82f6;
+  --lt-good: #16a34a;
+  --lt-warn: #d97706;
+  --lt-bad: #dc2626;
+  --lt-violet: #7c5cf0;
+  --lt-bg: #f4f6fb;
+  --lt-surface: #ffffff;
+  --lt-surface-2: #f6f8fc;
+  --lt-surface-3: #eceff7;
+  --lt-surface-sunk: #e9edf6;
+  --lt-text: #0e1526;
+  --lt-text-soft: #35405a;
+  --lt-muted: #64708c;
+  --lt-faint: #7d879f;
+  --lt-border: #e2e7f1;
+  --lt-border-ctl: #828a99;
+  --lt-border-firm: #6b7280;
+  --lt-border-strong: #525969;
+  --lt-accent-soft: #fdeee9;
+  --lt-accent-line: #f7c9ba;
+  --lt-accent-strong: #c74a1e;
+  --lt-accent-text: #c2410c;
+  --lt-info-soft: #e8f1fe;
+  --lt-info-text: #1d4ed8;
+  --lt-good-soft: #e6f6ec;
+  --lt-good-text: #146c34;
+  --lt-warn-soft: #fdf1e0;
+  --lt-warn-text: #a35a06;
+  --lt-bad-soft: #fdeaea;
+  --lt-bad-text: #b91c1c;
+  --lt-violet-soft: #efeaff;
+  --lt-fill-shift: #000;
+  --lt-tip-bg: #1e293b;
+  --lt-tip-ink: #e8eef7;
+  --lt-grid-line: rgba(20, 32, 60, 0.06);
+  --lt-scrim: rgba(10, 16, 30, 0.5);
+
+  --dk-bg: #080d18;
+  --dk-surface: #111a2c;
+  --dk-surface-2: #16203a;
+  --dk-surface-3: #1d2942;
+  --dk-surface-sunk: #0c1424;
+  --dk-text: #e9eefb;
+  --dk-text-soft: #c3cde3;
+  --dk-muted: #8b98b8;
+  --dk-faint: #7a87a8;
+  --dk-border: #22304c;
+  --dk-border-ctl: #5b6d92;
+  --dk-border-firm: #7186ad;
+  --dk-border-strong: #95a1bd;
+  --dk-accent-soft: #3a1d16;
+  --dk-accent-line: #6d3323;
+  --dk-accent-strong: #ff6a44;
+  --dk-accent-text: #ff8a66;
+  --dk-info-soft: #14243f;
+  --dk-info-text: #5b9dff;
+  --dk-good-soft: #102c1e;
+  --dk-good-text: #34c46b;
+  --dk-warn-soft: #33230d;
+  --dk-warn-text: #f0a13a;
+  --dk-bad-soft: #3a1717;
+  --dk-bad-text: #f0645f;
+  --dk-violet-soft: #241c45;
+  --dk-fill-shift: #fff;
+  --dk-tip-bg: #e9eefb;
+  --dk-tip-ink: #0e1526;
+  --dk-grid-line: rgba(150, 175, 230, 0.08);
+  --dk-scrim: rgba(0, 0, 0, 0.68);
+  --dk-accent: #ff6a44;
+  --dk-info: #5b9dff;
+  --dk-good: #34c46b;
+  --dk-warn: #f0a13a;
+  --dk-bad: #f0645f;
+  --dk-violet: #9b83ff;
+
+  --t-term-bg: #0d1117;
+  --t-term-bg2: #161b22;
+  --t-term-bg3: #1c2431;
+  --t-term-line: #242c38;
+  --t-term-ink: #c9d3e0;
+  --t-term-dim: #7c8798;
+  --t-term-green: #4ade80;
+  --t-term-red: #f87171;
+  --t-term-blue: #7cb6ff;
+  --t-term-amber: #f5c66b;
+}
+
+
+:root {
+  --pip-h: var(--bar-h);
+  --rail-w: var(--shell-rail-w);
+  --topbar-h: var(--shell-topbar-h);
+  --footnav-h: var(--shell-footnav-h);
+  --page-max: var(--shell-content-max);
+}
+
+:root {
+  --term-bg: var(--t-term-bg);
+  --term-bg2: var(--t-term-bg2);
+  --term-bg3: var(--t-term-bg3);
+  --term-line: var(--t-term-line);
+  --term-ink: var(--t-term-ink);
+  --term-dim: var(--t-term-dim);
+  --term-green: var(--t-term-green);
+  --term-red: var(--t-term-red);
+  --term-blue: var(--t-term-blue);
+  --term-amber: var(--t-term-amber);
+}
+
+/* Unscoped `:root` because these are the LIGHT values; the dark block below
+   overrides the ones that differ. */
+:root {
+  --accent: var(--lt-accent);
+  --accent-ink: var(--lt-accent-ink);
+  --info: var(--lt-info);
+  --good: var(--lt-good);
+  --warn: var(--lt-warn);
+  --bad: var(--lt-bad);
+  --violet: var(--lt-violet);
+}
+
+:root,
+[data-theme="light"] {
+  --bg: var(--lt-bg);
+  --surface: var(--lt-surface);
+  --surface-2: var(--lt-surface-2);
+  --surface-3: var(--lt-surface-3);
+  --surface-sunk: var(--lt-surface-sunk);
+  --text: var(--lt-text);
+  --text-soft: var(--lt-text-soft);
+  --muted: var(--lt-muted);
+  --faint: var(--lt-faint);
+  --border: var(--lt-border);
+  --border-ctl: var(--lt-border-ctl);
+  --border-firm: var(--lt-border-firm);
+  --border-strong: var(--lt-border-strong);
+  --accent-soft: var(--lt-accent-soft);
+  --accent-line: var(--lt-accent-line);
+  --accent-strong: var(--lt-accent-strong);
+  --accent-text: var(--lt-accent-text);
+  --info-soft: var(--lt-info-soft);
+  --info-text: var(--lt-info-text);
+  --good-soft: var(--lt-good-soft);
+  --good-text: var(--lt-good-text);
+  --warn-soft: var(--lt-warn-soft);
+  --warn-text: var(--lt-warn-text);
+  --bad-soft: var(--lt-bad-soft);
+  --bad-text: var(--lt-bad-text);
+  --violet-soft: var(--lt-violet-soft);
+  --focus-ring: color-mix(in srgb, var(--focus) 16%, transparent);
+  --ring-ink: color-mix(in srgb, var(--accent) 40%, transparent);
+  --fill-shift: var(--lt-fill-shift);
+  --tip-bg: var(--lt-tip-bg);
+  --tip-ink: var(--lt-tip-ink);
+  --shadow-1: var(--lt-shadow-1);
+  --shadow-2: var(--lt-shadow-2);
+  --shadow-3: var(--lt-shadow-3);
+  --grid-line: var(--lt-grid-line);
+  --scrim: var(--lt-scrim);
+}
+
+[data-theme="dark"] {
+  --bg: var(--dk-bg);
+  --surface: var(--dk-surface);
+  --surface-2: var(--dk-surface-2);
+  --surface-3: var(--dk-surface-3);
+  --surface-sunk: var(--dk-surface-sunk);
+  --text: var(--dk-text);
+  --text-soft: var(--dk-text-soft);
+  --muted: var(--dk-muted);
+  --faint: var(--dk-faint);
+  --border: var(--dk-border);
+  --border-ctl: var(--dk-border-ctl);
+  --border-firm: var(--dk-border-firm);
+  --border-strong: var(--dk-border-strong);
+  --accent-soft: var(--dk-accent-soft);
+  --accent-line: var(--dk-accent-line);
+  --accent-strong: var(--dk-accent-strong);
+  --accent-text: var(--dk-accent-text);
+  --info-soft: var(--dk-info-soft);
+  --info-text: var(--dk-info-text);
+  --good-soft: var(--dk-good-soft);
+  --good-text: var(--dk-good-text);
+  --warn-soft: var(--dk-warn-soft);
+  --warn-text: var(--dk-warn-text);
+  --bad-soft: var(--dk-bad-soft);
+  --bad-text: var(--dk-bad-text);
+  --violet-soft: var(--dk-violet-soft);
+  --focus-ring: color-mix(in srgb, var(--focus) 26%, transparent);
+  --ring-ink: color-mix(in srgb, var(--accent) 44%, transparent);
+  --fill-shift: var(--dk-fill-shift);
+  --tip-bg: var(--dk-tip-bg);
+  --tip-ink: var(--dk-tip-ink);
+  --shadow-1: var(--dk-shadow-1);
+  --shadow-2: var(--dk-shadow-2);
+  --shadow-3: var(--dk-shadow-3);
+  --grid-line: var(--dk-grid-line);
+  --scrim: var(--dk-scrim);
+  --accent: var(--dk-accent);
+  --info: var(--dk-info);
+  --good: var(--dk-good);
+  --warn: var(--dk-warn);
+  --bad: var(--dk-bad);
+  --violet: var(--dk-violet);
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  color: var(--text);
+  background-color: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--dur) var(--ease),
+              color var(--dur) var(--ease);
+}
+
+h1, h2, h3, h4, p, figure { margin: 0; }
+button { font: inherit; color: inherit; }
+svg.lucide { display: block; flex: none; }
+
+body { user-select: none; }
+input,
+textarea,
+select,
+[contenteditable],
+.chat__log,
+.chat__log * { user-select: text; }
+
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--border-firm) transparent; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--border-firm);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--faint); background-clip: content-box; }
+
+.mono { font-family: var(--font-mono); font-size: 0.9em; letter-spacing: -0.01em; }
+
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop-in {
+  0%   { opacity: 0; transform: scale(0.82); }
+  60%  { opacity: 1; transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+@keyframes pop-node {
+  0%   { transform: scale(0); }
+  70%  { transform: scale(1.28); }
+  100% { transform: scale(1); }
+}
+@keyframes nudge-x {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-3px); }
+  75%      { transform: translateX(3px); }
+}
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(5px); }
+  60%      { transform: translateX(-3px); }
+  80%      { transform: translateX(2px); }
+}
+/* A rejected typed command: the terminal's own hint blinks, so the correction
+   appears exactly where the command is written. */
+@keyframes hint-flash {
+  0%, 100% { opacity: 1; }
+  25%, 75% { opacity: .25; }
+  50%      { opacity: 1; }
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent); }
+  70%  { box-shadow: 0 0 0 12px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

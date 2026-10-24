@@ -1,0 +1,363 @@
+@import url('lesson-lab.css');
+
+.advanced-board { display: grid; gap: var(--sp-4); min-width: 0; }
+.advanced-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--sp-4); align-items: start; }
+.advanced-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); margin-top: var(--sp-4); }
+.advanced-actions .btn { white-space: normal; text-align: left; }
+.advanced-status { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4); border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); font-size: var(--fs-xs); }
+.advanced-status strong { color: var(--accent); overflow-wrap: anywhere; }
+.advanced-note { color: var(--text-soft); line-height: 1.65; font-size: var(--fs-xs); }
+.advanced-field { display: grid; gap: var(--sp-2); margin: var(--sp-3) 0; font-size: var(--fs-xs); font-weight: var(--fw-semibold); }
+/* Single-line controls are 32px (textarea excepted: it is multi-line). */
+.advanced-field select, .advanced-field input { width: 100%; min-width: 0; height: var(--ctl-md-h); border: var(--bw) solid var(--border-firm); border-radius: var(--r-sm); background: var(--surface); color: var(--text); font: inherit; padding: 0 var(--sp-3); }
+.advanced-field textarea { width: 100%; min-width: 0; border: var(--bw) solid var(--border-firm); border-radius: var(--r-sm); background: var(--surface); color: var(--text); font: inherit; padding: var(--sp-3); }
+.advanced-field textarea { min-height: 130px; resize: vertical; line-height: 1.65; font-family: var(--font-mono); font-weight: var(--fw-regular); }
+.advanced-field input { font-family: var(--font-mono); font-weight: var(--fw-regular); }
+.advanced-check { display: flex; align-items: start; gap: var(--sp-2); margin-top: var(--sp-3); font-size: var(--fs-xs); line-height: 1.6; }
+.advanced-check input { margin-top: 4px; flex: none; accent-color: var(--accent); }
+.advanced-board :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.advanced-board button:disabled { opacity: .48; cursor: not-allowed; }
+.advanced-board .lesson-feedback { margin-top: var(--sp-4); }
+.advanced-role[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.advanced-output { max-height: 270px; overflow: auto; margin-top: var(--sp-3); border: 1px solid var(--border); }
+.advanced-diff { padding: var(--sp-3); border-radius: var(--r-sm); font: var(--fs-xs)/1.7 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; background: var(--surface-2); }
+.advanced-diff del, .advanced-diff ins { display: block; text-decoration: none; padding: 3px 6px; }
+.advanced-diff del { background: var(--bad-soft); color: var(--bad); }
+.advanced-diff ins { background: var(--good-soft); color: var(--good); }
+/* Commit list: a fixed 78px canvas on the left (height = rows x 68), one commit
+   per row on the right. The canvas overlays the rows but has pointer-events:none,
+   so clicking a dot still selects the row. */
+.advanced-graph { position: relative; margin-top: var(--sp-3); }
+.advanced-graph__canvas { position: absolute; top: 0; left: 0; margin: 0; pointer-events: none; }
+.advanced-graph__canvas .gnode { pointer-events: none; }
+.advanced-graph__canvas .gedge { animation: gedge-draw var(--dur-260) var(--ease) both; }
+.advanced-graph__row { display: grid; grid-template-columns: 1fr; align-content: center; width: 100%; height: 68px; padding: 6px 8px 6px 86px; background: transparent; border: 0; border-radius: var(--r-sm); text-align: left; color: var(--text); cursor: pointer; }
+.advanced-graph__row:hover, .advanced-graph__row[aria-pressed="true"] { background: var(--accent-soft); }
+.advanced-graph__row strong { font-size: var(--fs-xs); font-weight: var(--fw-semibold); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.advanced-graph__row small { color: var(--muted); font: var(--fs-xs)/1.5 var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* This strip marks lanes with the SMALL node, so its root dot scales with it -
+   the 4px token is sized for a 34px circle. */
+.advanced-graph__canvas { --g-node-dot: 1.8px; }
+/* blame line button: one commit record, unrelated to the file structure.
+   Renamed from .lesson-file, whose name wrongly suggested a file-tree node. */
+.advanced-blame-line {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 40px;
+  margin: var(--sp-2) 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.advanced-blame-line:hover { border-color: var(--accent); }
+.advanced-detail { border-top: 1px solid var(--border); margin-top: var(--sp-3); padding-top: var(--sp-3); }
+.advanced-detail dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--sp-2) var(--sp-3); font-size: var(--fs-xs); }
+.advanced-detail dt { color: var(--muted); }
+.advanced-detail dd { margin: 0; overflow-wrap: anywhere; }
+.advanced-progress { display: flex; flex-wrap: wrap; gap: 6px; padding: 0; list-style: none; }
+.advanced-progress li { flex: 1; min-width: 70px; border-top: 3px solid var(--border); padding-top: var(--sp-2); font-size: var(--fs-xs); color: var(--muted); }
+.advanced-progress li.is-done { border-color: var(--good); color: var(--good); }
+.advanced-progress li.is-current { border-color: var(--accent); color: var(--accent); font-weight: var(--fw-bold); }
+.advanced-mission-title { font-size: var(--fs-lg); line-height: 1.35; margin: var(--sp-3) 0; }
+.advanced-subtask { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-3); flex-wrap: wrap; }
+/* A lab may hold several typed commands: stack them vertically, each keeping
+   its own .gitterm border and log, instead of a horizontal button row. */
+.advanced-terms { display: grid; gap: var(--sp-3); margin-top: var(--sp-3); }
+/* PR review step list. Renamed from advanced-file-list, which listed steps,
+   not files, and implied a file-tree role. */
+.advanced-step-list { padding-left: 1.2rem; font: var(--fs-xs)/1.8 var(--font-mono); overflow-wrap: anywhere; }
+.advanced-conflict { border-left: 3px solid var(--warn); padding-left: var(--sp-3); }
+.advanced-source { margin-top: var(--sp-3); font-size: var(--fs-xs); }
+.advanced-source a { color: var(--muted); text-underline-offset: 3px; }
+@media (max-width: 1080px) { .advanced-grid { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .lesson-panel { padding: var(--sp-4); } .advanced-progress li { min-width: 55px; } }
+
+/* Stage 2 uses the existing components with local spacing and type overrides. */
+.development-lab { gap: var(--sp-5); }
+.development-lab > .lesson-panel { border: 0; box-shadow: none; padding: 0; }
+.development-lab .lesson-panel h3 { font-size: 18px; margin-bottom: 16px; }
+.development-lab h4 { font-size: 14px; line-height: 1.5; margin: 0 0 6px; font-weight: var(--fw-bold); }
+.development-lab .lesson-panel p { font-size: 14px; line-height: 1.65; margin: 0; color: var(--text-soft); }
+.development-lab .advanced-progress { margin: 0 0 20px; gap: 16px; }
+.development-lab .advanced-progress li { border-top-width: 1px; min-width: 84px; }
+.development-lab .advanced-progress strong { display: block; font-size: 18px; font-weight: 700; color: var(--text); }
+.development-member-status { display: block; margin-top: 6px; font-size: 15px; font-weight: 600; line-height: 1.5; }
+.development-sample { display: grid; gap: 8px; margin: 12px 0 16px; padding: 16px; border-radius: var(--r-md); background: var(--surface-2); }
+.development-sample .btn { justify-self: start; white-space: normal; text-align: left; }
+.development-file-feedback { margin: 8px 0 12px; }
+.development-history > .btn { margin-bottom: 12px; }
+.development-transition, .development-completion { padding: 16px 20px; background: var(--surface-2); border-radius: var(--r-md); }
+.development-transition { margin-bottom: 16px; }
+.development-lab .development-transition h3, .development-lab .development-completion h3 { font-size: 20px; margin: 8px 0; }
+.development-transition p, .development-completion p { font-size: 14px; line-height: 1.65; margin: 8px 0; }
+.development-transition .btn { margin-top: 8px; }
+.development-context { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 20px; }
+.development-context > div { min-width: 0; }
+.development-context p + p { margin-top: 8px !important; }
+.development-lab .gitterm { margin-top: 10px; }
+.development-lab .gitterm__log { max-height: 144px; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.development-lab .gitterm__log .tline { padding: 3px 16px; }
+.development-lab .gitterm__log .tout { font-size: 13px; }
+.development-lab .gitterm .gitterm__note { font-size: 12px; color: var(--term-dim); padding: 8px 16px 0; }
+.development-lab .gitterm .gitterm__hint { font-size: 12px; color: var(--term-dim); padding: 0 16px 10px; }
+.development-lab .gitterm__row { padding: 10px 16px; }
+.development-observation { margin-top: 16px; }
+.development-observation__heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.development-observation__heading span { font: 12px/1.5 var(--font-mono); overflow-wrap: anywhere; color: var(--text-soft); }
+.development-flow { display: flex; align-items: stretch; }
+.development-flow > div { flex: 1; padding: 12px 14px; border-radius: var(--r-md); background: var(--surface-2); min-width: 0; }
+.development-flow .gconn { margin: 0 var(--sp-3); }
+.development-flow h4 { font-size: 13px; }
+.development-flow strong { display: block; font-size: 18px; line-height: 1.5; color: var(--accent); }
+/* `:not(.gconn)` because the join between two cells is also a <span>; without it
+   this rule turns the connector into a block, which drops it off the vertical
+   centre of the row (measured 41px low). */
+.development-flow span:not(.gconn) { display: block; font: 12px/1.6 var(--font-mono); overflow-wrap: anywhere; margin-top: 4px; }
+.development-result { margin-top: 16px; padding-left: 12px; border-left: 3px solid var(--accent); }
+.development-result.is-error { border-color: var(--warn); }
+.development-lab .lesson-hint { margin-top: 16px; }
+.development-lab .lesson-hint li { font-size: 14px; line-height: 1.7; }
+.development-lab .lesson-hint ol { padding-left: 36px; }
+.development-details { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.development-history { min-width: 0; }
+.development-details .lesson-panel { padding: 20px; box-shadow: none; }
+.development-history .advanced-graph { max-height: 28rem; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.development-history .advanced-graph__row { height: auto; min-height: 82px; margin-left: var(--history-lane-width, 116px); width: calc(100% - var(--history-lane-width, 116px)); padding: 12px 8px; }
+.development-history .advanced-graph__row strong { white-space: normal; overflow: visible; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
+.development-history .advanced-graph__row small { white-space: normal; overflow: visible; font-size: 12px; margin-top: 4px; }
+.development-history .advanced-status { font-size: 13px; padding: 12px; }
+.development-history .advanced-status span { overflow-wrap: anywhere; }
+/* HEAD is a label; the row background and inset border denote selection only. */
+.development-history .advanced-graph__row { background: transparent; box-shadow: none; }
+.development-history .advanced-graph__row:hover { background: var(--surface-2); }
+.development-history .advanced-graph__row[aria-pressed="true"] { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+.development-history .advanced-graph__canvas .gnode { pointer-events: auto; cursor: pointer; }
+.development-history .advanced-graph { padding-bottom: 16px; }
+.development-history .gedge { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+/* The ref pills under a row's id: the same `.gref` the sandbox uses. */
+.advanced-graph__refs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.development-history .advanced-detail dl { font-size: 13px; }
+.development-snapshots { display: grid; gap: 16px; margin-top: 16px; }
+.development-snapshots > div { min-width: 0; border-top: 1px solid var(--border); padding-top: 12px; }
+.development-snapshots .ftree { border: 0; border-radius: 0; background: transparent; }
+.development-snapshots .ftree__head { border: 0; padding: 0 0 8px; background: transparent; }
+.development-snapshots .ftree__title { font-size: 14px; letter-spacing: 0; text-transform: none; }
+.development-snapshots .ftree__body { min-height: 0; padding: 0; }
+.development-snapshots .ftree__row { gap: 8px; padding-top: 5px; padding-bottom: 5px; }
+.development-snapshots .ftree__name { font-size: 13px; }
+.development-snapshots .ftree__mark { margin-left: 8px; }
+.development-snapshots .ftree__empty { margin: 4px 0; text-align: left; }
+.development-snapshots details { margin-top: 10px; font-size: 13px; }
+.development-snapshots summary { cursor: pointer; }
+.development-announcement { position: absolute; width: 1px; height: 1px; padding: 0 !important; margin: -1px !important; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@media (max-width: 1080px) { .development-details { grid-template-columns: 1fr; } }
+@media (max-width: 620px) {
+  .development-context { grid-template-columns: 1fr; gap: 12px; }
+  /* Stacked, the order already says what leads to what, and an arrow between two
+     full-width blocks would sit alone on a line of its own. */
+  .development-flow { flex-direction: column; gap: 12px; }
+  .development-flow .gconn { display: none; }
+  .development-flow > div { padding: 12px; }
+  .development-lab .advanced-progress { gap: 10px; }
+  .development-details .lesson-panel { padding: 16px; }
+  .development-history .advanced-detail dl { grid-template-columns: 1fr; }
+}
+
+.development-interaction { scroll-margin-block: 76px; }
+.development-interaction > h4 { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.development-interaction > h4 small { color: var(--muted); font-size: 12px; font-weight: var(--fw-regular); }
+
+/* Stage 3 reuses the development workspace; only references and editing are new. */
+.synchronization-remote, .synchronization-conflict { margin-top: 24px; padding: 16px; border: 1px solid var(--border); border-radius: var(--r-md); }
+.synchronization-remote dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 12px 0; }
+.synchronization-remote dt { font-size: 13px; color: var(--text-soft); }
+.synchronization-remote dd { margin: 4px 0 0; font: 14px var(--font-mono); overflow-wrap: anywhere; }
+.synchronization-versions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+.synchronization-versions > div { min-width: 0; }
+.synchronization-conflict .lesson-code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.synchronization-conflict textarea { width: 100%; min-height: 160px; padding: 12px; font: 14px/1.6 var(--font-mono); resize: vertical; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); }
+.synchronization-conflict .advanced-field { margin: 16px 0; }
+.synchronization-conflict summary { cursor: pointer; }
+.synchronization-editor-feedback { margin-top: 12px !important; }
+@media (max-width: 620px) {
+  .synchronization-versions, .synchronization-remote dl { grid-template-columns: 1fr; }
+  .synchronization-remote, .synchronization-conflict { padding: 12px; }
+}
+
+/* Stage 4 layout only: shared repository, graph geometry and commands are unchanged. */
+.review-stage .beat__brief, .review-stage .beat__work { padding: 16px 20px; }
+.review-stage .lesson-guide__intro h2 { margin-bottom: 8px; }
+.review-stage .lesson-guide__task { margin-top: 12px; padding: 12px 16px; }
+.review-lab { gap: 16px; }
+.review-lab .review-overview { padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.review-lab .review-overview__summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 16px; font-size: 13px; color: var(--text-soft); }
+.review-lab .review-overview h3 { margin: 0; font-size: 17px; color: var(--text); }
+.review-lab .review-status { background: var(--accent-soft); color: var(--accent); border-radius: var(--r-sm); padding: 3px 8px; }
+.review-lab .review-progress { display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 12px 0 0; padding: 0; list-style: none; font-size: 13px; }
+.review-lab .review-progress li { color: var(--muted); border-bottom: 2px solid transparent; padding-bottom: 4px; }
+/* The arrow between PR steps is a `.gconn` (chapter.css section 26). */
+.review-lab .review-progress .gconn { color: var(--muted); }
+.review-lab .review-progress .is-current { color: var(--accent); border-color: var(--accent); font-weight: var(--fw-bold); }
+.review-lab .review-progress .is-done { color: var(--good); }
+.review-lab .review-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-areas: 'workspace history' 'terminal observation';
+  gap: 20px;
+  align-items: stretch;
+}
+.review-lab .review-workspace { grid-area: workspace; }
+.review-lab .development-history { grid-area: history; }
+.review-lab .review-terminal { grid-area: terminal; }
+.review-lab .review-observation { grid-area: observation; }
+/* Auto grid rows take their tallest content up to this viewport-relative ceiling.
+ * Both flex panels stretch to that row; only their bodies can overflow it. */
+.review-lab .review-panel {
+  display: flex; flex-direction: column; min-width: 0; min-height: 0;
+  max-height: min(64rem, max(20rem, calc(100dvh - 10rem)));
+  padding: 0; border: 1px solid var(--border); border-radius: var(--r-md);
+  box-shadow: none; background: var(--surface);
+}
+.review-lab .review-panel-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; flex: none; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.review-lab .review-panel-heading h3 { font-size: 17px; line-height: 1.5; margin: 0; }
+.review-lab .review-panel-heading .btn { font-size: 12px; padding: 4px 8px; min-height: 28px; height: auto; }
+.review-lab .review-panel-body { flex: 1 1 auto; min-height: 0; padding: 16px; overflow-y: auto; overscroll-behavior-y: contain; overflow-wrap: anywhere; scroll-padding-block: 12px; }
+/* The panel is the only vertical scroller around the graph and selected details. */
+.review-lab .development-history .advanced-graph { max-height: none; overflow: visible; scrollbar-gutter: auto; }
+.review-lab .development-history .advanced-output { max-height: none; overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-lab .development-context { grid-template-columns: 1fr; gap: 10px; margin-bottom: 12px; }
+.review-lab .review-platform { margin: 0; }
+.review-lab .review-platform > .advanced-note { margin-top: 8px; }
+.review-lab .review-platform .advanced-actions { margin-top: 8px; }
+.review-lab .review-platform h4 { margin: 12px 0 6px; }
+.review-lab .review-platform .advanced-field { margin: 8px 0; }
+.review-lab .review-platform .lesson-code, .review-lab .review-platform .advanced-diff { white-space: pre-wrap; overflow-wrap: anywhere; }
+.review-lab .review-platform .advanced-output { max-height: none; overflow: visible; }
+.review-lab .review-changes { margin: 12px 0; }
+.review-lab .review-changes summary { cursor: pointer; font-size: 14px; }
+.review-lab .review-other-files { margin-top: 12px; }
+.review-lab .review-actions { margin-top: 12px; }
+.review-lab .review-actions > .advanced-note { margin-top: 10px; }
+.review-lab .review-platform .review-platform-feedback { color: var(--warn); margin-top: 12px; }
+.review-lab .review-platform-feedback:empty { display: none; }
+.review-lab .development-result { margin-top: 12px; }
+.review-lab .lesson-hint { margin-top: 12px; }
+.review-lab .review-terminal, .review-lab .review-observation { min-width: 0; padding-top: 4px; }
+.review-lab .review-terminal > h3 { font-size: 17px; margin: 0 0 8px; }
+.review-lab .review-terminal .gitterm { margin-top: 0; }
+.review-lab .development-observation { margin-top: 0; }
+.review-lab .development-flow { flex-direction: column; gap: 8px; }
+.review-lab .development-flow > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 12px; }
+.review-lab .development-flow .gconn { display: none; }
+.review-lab .development-flow strong { font-size: 15px; }
+.review-lab .development-flow span:not(.gconn) { grid-column: 1 / -1; margin-top: 0; }
+.review-lab .synchronization-remote { margin-top: 12px; padding: 0; border: 0; }
+.review-lab .synchronization-remote table { border-collapse: collapse; width: 100%; table-layout: fixed; margin: 8px 0; font-size: 12px; }
+.review-lab .synchronization-remote th, .review-lab .synchronization-remote td { padding: 4px; text-align: left; overflow-wrap: anywhere; }
+.review-lab .synchronization-remote td { font-family: var(--font-mono); }
+.review-lab .synchronization-remote p { font-size: 12px; }
+.review-lab .review-workspace-details { padding-top: 12px; border-top: 1px solid var(--border); }
+.review-lab .review-workspace-details > summary { cursor: pointer; font-size: 15px; font-weight: var(--fw-bold); }
+.review-lab .review-workspace-details > p { margin-top: 12px; }
+.review-lab .review-actions, .review-lab .advanced-graph__row, .review-lab .gitterm__row,
+.review-lab .development-observation, .review-lab .synchronization-remote { scroll-margin-block: 16px; }
+@media (max-width: 1080px) {
+  .review-lab .review-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'workspace' 'terminal' 'observation' 'history'; align-items: start; }
+  .review-lab .review-panel { max-height: none; }
+  .review-lab .review-panel-body { overflow: visible; flex: none; }
+  .review-lab .review-actions, .review-lab .advanced-graph__row, .review-lab .gitterm__row,
+  .review-lab .development-observation, .review-lab .synchronization-remote { scroll-margin-top: 80px; }
+}
+@media (max-width: 620px) {
+  .review-stage .beat__brief, .review-stage .beat__work { padding: 12px; }
+  .review-lab .review-panel-heading, .review-lab .review-panel-body { padding: 12px; }
+  .review-lab .review-progress { gap: 6px 12px; }
+}
+.team-recap { grid-template-columns: 1fr; }
+.team-recap-concepts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 16px 0; }
+.team-recap-concepts dt { font-weight: var(--fw-bold); margin-bottom: 6px; }
+.team-recap-concepts dd { margin: 0; color: var(--text-soft); font-size: 14px; line-height: 1.7; }
+@media (max-width: 620px) {
+  .team-recap-concepts { grid-template-columns: 1fr; gap: 16px; }
+}
+
+/* Chapter 14 only: independent toolkit exercises reuse the existing components. */
+.toolkit-stage .beat__brief, .toolkit-stage .beat__work { padding: 20px; }
+.toolkit-intro h2 { margin: 8px 0 16px; }
+.toolkit-context { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.toolkit-context h3 { margin: 0 0 6px; font-size: 14px; }
+.toolkit-context p { margin: 0; font-size: 14px; line-height: 1.65; color: var(--text-soft); }
+.toolkit-lab { gap: 20px; }
+.toolkit-lab h3 { margin: 0 0 12px; font-size: 18px; }
+.toolkit-lab h4 { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.toolkit-lab .advanced-note, .toolkit-lab .lesson-panel p { font-size: 14px; line-height: 1.65; color: var(--text-soft); margin: 8px 0 12px; }
+.toolkit-layout { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.toolkit-layout .lesson-panel { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.toolkit-lab .toolkit-terminal-title { margin-top: 16px; }
+.toolkit-lab .gitterm { margin-top: 8px; }
+.toolkit-lab .gitterm__log { max-height: 20rem; overflow-y: auto; overscroll-behavior: contain; }
+.toolkit-lab .gitterm__log .tout { font-size: 13px; }
+.toolkit-lab .gitterm .gitterm__note, .toolkit-lab .gitterm .gitterm__hint { font-size: 12px; color: var(--term-dim); }
+.toolkit-lab .gitterm__hint code { overflow-wrap: anywhere; }
+.toolkit-feedback-slot { margin: 16px 0; }
+.toolkit-lab .lesson-feedback { margin-top: 0; padding: 12px; font-size: 14px; }
+.toolkit-lab .lesson-hint { font-size: 14px; }
+.toolkit-lab .lesson-hint ol { padding-left: 36px; }
+.toolkit-lab .lesson-hint li + li { margin-top: 6px; }
+.toolkit-history { min-width: 0; padding-left: 24px; border-left: 1px solid var(--border); }
+.toolkit-history .advanced-graph { max-height: none; overflow: visible; }
+.toolkit-history .advanced-graph__row { height: auto; min-height: 68px; padding: 10px 8px 10px 68px; }
+.toolkit-history .advanced-graph__row strong { font-size: 13px; line-height: 1.5; white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+.toolkit-history .advanced-graph__row small { margin-top: 4px; font-size: 12px; white-space: normal; overflow: visible; overflow-wrap: anywhere; }
+.toolkit-history .advanced-graph__row[aria-current="true"] strong { color: var(--accent); }
+.toolkit-history .advanced-graph__row[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
+.toolkit-history .gedge { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
+.toolkit-history .advanced-detail dl { font-size: 13px; }
+.toolkit-history .advanced-status { font-size: 13px; padding: 10px 12px; }
+.toolkit-observation { border-top: 1px solid var(--border); padding-top: 20px; min-width: 0; }
+.toolkit-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 20px; margin: 12px 0 16px; }
+.toolkit-facts > div { min-width: 0; }
+.toolkit-facts dt { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.toolkit-facts dd { margin: 4px 0 0; font: 13px/1.6 var(--font-mono); overflow-wrap: anywhere; }
+.toolkit-layout .toolkit-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.toolkit-file-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.toolkit-file-comparison > div { min-width: 0; }
+.toolkit-lab .advanced-output { max-height: none; overflow: visible; border: 0; margin: 8px 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.toolkit-lab .advanced-diff { font-size: 13px; }
+.toolkit-lab .ftree { border: 0; box-shadow: none; background: transparent; margin-top: 16px; }
+.toolkit-lab .ftree__head { padding: 0 0 8px; border: 0; background: transparent; }
+.toolkit-lab .ftree__title { font-size: 14px; text-transform: none; letter-spacing: 0; }
+.toolkit-lab .ftree__body { min-height: 0; padding: 0; }
+.toolkit-lab .ftree__name { font-size: 13px; }
+.toolkit-result { padding-left: 14px; border-left: 3px solid var(--accent); }
+.toolkit-completion { padding: 16px; background: var(--good-soft); border-radius: var(--r-md); }
+.toolkit-warning { margin: 12px 0; padding: 14px; background: var(--warn-soft); border-left: 3px solid var(--warn); border-radius: var(--r-sm); }
+.toolkit-warning .advanced-check { font-size: 14px; }
+.toolkit-footer { display: flex; gap: 12px 20px; flex-wrap: wrap; align-items: center; }
+.toolkit-footer .advanced-note { flex: 1 1 280px; margin: 0; font-size: 12px; }
+.toolkit-lab .btn { white-space: normal; }
+@media (max-width: 1080px) {
+  .toolkit-layout { grid-template-columns: minmax(0, 1fr); }
+  .toolkit-history { padding: 20px 0 0; border-left: 0; border-top: 1px solid var(--border); }
+  .toolkit-context { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (max-width: 620px) {
+  .toolkit-stage .beat__brief, .toolkit-stage .beat__work { padding: 14px; }
+  .toolkit-facts, .toolkit-layout .toolkit-facts, .toolkit-file-comparison { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .toolkit-history .advanced-detail dl { grid-template-columns: minmax(0, 1fr); }
+  .toolkit-lab .gitterm__row { flex-wrap: wrap; }
+  .toolkit-lab .gitterm__input { min-width: 0; }
+}
+
+/* Reuse the phone chapter picker for free navigation within Chapters 13 and 14. */
+.picklist--sections { padding-left: 20px; overflow: visible; }
+.pickrow[data-pick-section] { width: 100%; border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+.pickrow[data-pick-section].is-here { background: var(--accent-soft); }
+.pickrow[data-pick-section]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

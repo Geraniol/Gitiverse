@@ -1,0 +1,157 @@
+/* Focused lesson surfaces reuse the chapter's colours, type and controls.
+   The INTRO / TASK / SETUP / SIMULATION rules live in chapter.css, which
+   every chapter loads - only chapters 2, 3, 4, 8, 9 and 10 load this file. */
+.lesson-guide { display: grid; gap: var(--sp-4); }
+.lesson-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+.lesson-panel { padding: var(--sp-5); border: 1px solid var(--border); border-radius: var(--r-xl); background: var(--surface); box-shadow: var(--shadow-1); min-width: 0; }
+.lesson-panel.is-selected { border-color: var(--accent-line); background: color-mix(in srgb, var(--accent-soft) 25%, var(--surface)); }
+.lesson-panel h3 { font-size: var(--fs-md); font-weight: var(--fw-bold); margin: 0 0 var(--sp-3); }
+.lesson-panel p { color: var(--muted); font-size: var(--fs-xs); line-height: 1.6; }
+.lesson-code { font-family: var(--font-mono); font-size: var(--fs-xs); line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.lesson-code { background: var(--surface-2); border-radius: var(--r-sm); padding: var(--sp-4); color: var(--text); }
+.lesson-feedback { padding: var(--sp-4); border-left: 3px solid var(--warn); background: var(--warn-soft); border-radius: var(--r-sm); line-height: 1.7; }
+.lesson-feedback.is-success { border-color: var(--good); background: var(--good-soft); }
+/* A hint box looks like the other boxes: same light bordered surface as
+   .lesson-guide__task and .lesson-guide__setup, and open by default. */
+.lesson-hint {
+  border: var(--bw) solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  color: var(--text-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  overflow: hidden;
+}
+.lesson-hint > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--ctl-md-h);
+  padding: 0 var(--sp-4);
+  color: var(--text);
+  font-weight: var(--fw-semibold);
+  background: var(--surface-3);
+  border-bottom: var(--bw) solid var(--border);
+}
+.lesson-hint > summary::-webkit-details-marker { display: none; }
+.lesson-hint > summary::before {
+  content: "";
+  flex: none;
+  width: 6px; height: 6px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform var(--dur-fast) var(--ease);
+}
+.lesson-hint[open] > summary::before { transform: rotate(225deg); }
+.lesson-hint > *:not(summary) { margin: 0; padding: var(--sp-3) var(--sp-4); }
+.lesson-hint p { color: var(--text-soft); }
+/* WARNING: a <code> that is a direct child of <details> is a lone command,
+   so it gets `display: block`. A <code> inside a paragraph stays inline
+   (see .lesson-hint p code below). */
+.lesson-hint code { display: block; padding: var(--sp-3); color: var(--accent); overflow-wrap: anywhere; }
+.lesson-hint p code { display: inline; padding: 0 var(--sp-1); }
+.lesson-empty { display: grid; justify-items: center; gap: var(--sp-3); padding: var(--sp-6) 0; color: var(--muted); }
+.lesson-snapshot { display: flex; align-items: center; gap: var(--sp-3); margin: var(--sp-4) 0; color: var(--accent); }
+.lesson-snapshot div { display: grid; gap: var(--sp-1); }
+.lesson-snapshot small { font: var(--fs-xs) var(--font-mono); color: var(--muted); }
+.lesson-flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+.lesson-flow__card { height: 280px; padding: 0; border: 0; border-radius: var(--r-lg); background: transparent; color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.lesson-flow__card .cap__inner { display: block; }
+.lesson-flow__card .cap__face--back { gap: var(--sp-3); cursor: pointer; }
+.lesson-flow__card:hover .cap__face { border-color: var(--accent-line); box-shadow: var(--shadow-2); }
+.lesson-flow__number { position: absolute; top: var(--sp-4); left: var(--sp-4); color: var(--faint); font: var(--fs-xs) var(--font-mono); }
+.lesson-flow__backtitle { display: flex; align-items: center; gap: var(--sp-2); color: var(--accent); font-size: var(--fs-xs); font-weight: var(--fw-bold); }
+.lesson-flow__backtitle svg { flex: none; }
+.lesson-flow__description { flex: 1; color: var(--text-soft); font-size: var(--fs-xs); line-height: 1.65; }
+.lesson-flow__card .cap__backhint { align-self: flex-end; }
+.lesson-actions { display: flex; flex-wrap: wrap; gap: var(--sp-3); align-items: center; margin-top: var(--sp-4); }
+.lesson-actions .btn { min-height: var(--ctl-md-h); }
+.lesson-actions > span { font-size: var(--fs-xs); color: var(--muted); }
+.lesson-browser { overflow: hidden; border: 1px solid var(--border); border-radius: var(--r-md); background: var(--surface-2); }
+.lesson-browser__page { display: grid; align-content: center; justify-items: start; gap: var(--sp-3); min-height: 154px; padding: var(--sp-5); }
+.lesson-browser__caption { color: var(--muted); font-size: var(--fs-xs); }
+.lesson-browser__heading { font-size: var(--fs-md); letter-spacing: -.01em; color: var(--text); }
+.lesson-browser__line { width: 80%; height: 6px; background: var(--border); border-radius: var(--r-xs); }
+.lesson-browser__line:last-child { width: 55%; }
+.lesson-browser.is-new { border-color: var(--accent-line); }
+.lesson-browser.is-new .lesson-browser__heading { color: var(--accent); animation: lesson-highlight var(--dur-520) ease-out both; }
+.lesson-transfer { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: var(--sp-3); }
+/* The join between the working panel and the staging panel is a `.gconn`
+   (chapter.css section 26); accent and the large size are all that is local. */
+.lesson-transfer__arrow { color: var(--accent); }
+.lesson-change { display: grid; gap: var(--sp-4); width: 100%; padding: var(--sp-4); background: var(--surface-2); color: var(--text); border: 1px solid var(--border-firm); border-radius: var(--r-md); cursor: pointer; text-align: left; }
+.lesson-change:hover { border-color: var(--accent); }
+.lesson-change.is-picked { border-color: var(--accent); background: var(--accent-soft); }
+.lesson-change:disabled { cursor: default; }
+.lesson-change__head { display: flex; flex-wrap: wrap; gap: var(--sp-2); align-items: center; }
+.lesson-change__head svg { color: var(--accent); flex: none; }
+.lesson-change__head strong { font: var(--fw-semibold) var(--fs-xs) var(--font-mono); }
+.lesson-change__head small { flex-basis: 100%; color: var(--muted); }
+.lesson-change__diff { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-3); font-size: var(--fs-md); }
+.lesson-change__diff del { color: var(--muted); }
+.lesson-change__diff ins { color: var(--accent); text-decoration: none; font-weight: var(--fw-bold); }
+.lesson-staged { display: grid; grid-template-columns: 24px 1fr; gap: var(--sp-2) var(--sp-3); padding: var(--sp-4); border: 1px solid var(--good); border-radius: var(--r-md); background: var(--good-soft); }
+.lesson-staged svg { color: var(--good); }
+.lesson-staged > span, .lesson-staged > small { grid-column: 2; }
+.lesson-staged small { color: var(--muted); }
+/* A read-only preview of "what gets recorded this time", now one 32px row
+   with label and value side by side, matching the button's height. */
+.lesson-note {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--ctl-md-h);
+  min-width: 0;
+  padding: 0 var(--sp-3);
+  background: var(--surface);
+  border: var(--bw) solid var(--border-ctl);
+  border-radius: var(--r-md);
+}
+.lesson-note > span { font-size: var(--fs-xs); color: var(--muted); white-space: nowrap; }
+.lesson-note > strong {
+  min-width: 0;
+  font-size: var(--fs-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lesson-record { display: flex; align-items: flex-start; gap: var(--sp-3); padding: var(--sp-4); background: var(--good-soft); border: 1px solid var(--good); border-radius: var(--r-md); }
+.lesson-record svg { color: var(--good); flex: none; }
+.lesson-record > div { display: grid; gap: var(--sp-1); }
+.lesson-record span, .lesson-record small { font-size: var(--fs-xs); color: var(--muted); }
+.lesson-record p { margin: var(--sp-2) 0; color: var(--text); font-size: var(--fs-lg); }
+.lesson-style-preview { padding: var(--sp-5); background: var(--surface-2); color: coral; font-size: var(--fs-lg); font-weight: var(--fw-bold); border-radius: var(--r-md); }
+.lesson-script-preview { padding: var(--sp-4); background: var(--surface-2); border-radius: var(--r-md); }
+.lesson-script-preview svg { color: var(--accent); }
+.lesson-source { margin-top: var(--sp-3); }
+.is-arriving { animation: lesson-arrive var(--dur-420) ease-out both; }
+@keyframes lesson-arrive { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes lesson-highlight { from { opacity: .3; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .is-arriving, .lesson-browser.is-new .lesson-browser__heading { animation: none; }
+  .lesson-flow__card .cap__inner { transition: none; }
+}
+@media (max-width: 620px) {
+  .lesson-columns, .lesson-flow { grid-template-columns: minmax(0, 1fr); }
+  .lesson-transfer { grid-template-columns: minmax(0, 1fr); }
+  .lesson-transfer__arrow > .lucide-arrow-right { transform: rotate(90deg); }
+  .lesson-actions { align-items: stretch; flex-direction: column; }
+  .lesson-actions .btn { justify-content: center; white-space: normal; }
+  .lesson-panel { padding: var(--sp-4); }
+}
+
+.lesson-init { display: grid; gap: var(--sp-4); }
+.lesson-init__note {
+  display: flex; align-items: flex-start; gap: var(--sp-2);
+  margin: 0; padding: var(--sp-3) var(--sp-4);
+  border: var(--bw) solid var(--border); border-radius: var(--r-lg);
+  background: var(--surface-2); color: var(--text-soft);
+  font-size: var(--fs-xs); line-height: 1.6;
+}
+.lesson-init__note svg { flex: none; margin-top: 2px; color: var(--muted); }
+.lesson-init__note strong { color: var(--text); }
+.lesson-init__note.is-ready { border-color: var(--accent-line); background: var(--accent-soft); }
+.lesson-init__note.is-ready svg { color: var(--accent); }

@@ -1,0 +1,90 @@
+
+/* The collapse toggle and close button exist only in stacked mode.
+   WARNING: this is the only rule that styles .files-close - keep it, or the
+   left-column overlay shows an unstyled close button (#filesClose stays hidden). */
+.files-toggle,.files-close{display:none;}
+
+@media (max-width:1080px){
+
+  .main{
+    /* Row heights are adjustable: --st-r1/--st-r2 are stacked-mode ratios
+       written by layout.js. Fall back to 1fr. Use fr, not %, because % plus
+       gap overflows while fr only divides the remaining space. */
+    display:grid;grid-template-columns:1fr;
+    grid-template-rows:var(--st-r1,1fr) var(--st-r2,1fr);
+    gap:10px;padding:10px;
+    /* Height is viewport minus topbar: the page never scrolls globally.
+       Neutralise min-height here, or tall content pushes the page out of view. */
+    height:calc(100vh - var(--topbar-h));min-height:0;overflow:hidden;
+  }
+  html,body{overflow:hidden;}
+  #colMid,#colRight{display:contents;}
+  .col{min-height:0;}
+
+  /* Row 1: commit graph (positioned, so the collapse button anchors top-left) */
+  .graph-card{grid-area:1 / 1;min-height:0;position:relative;}
+  /* Row 2: terminal and AI share one cell (toggling lives in core/stacked.js) */
+  #termCard{grid-area:2 / 1;min-height:0;}
+  #aiCard{grid-area:2 / 1;min-height:0;}
+  /* .devbar (collab identity bar) is gone: it stays display:none (devbar.css)
+     and is no longer a grid item, so it cannot land in an implicit row 3. */
+
+  /* Cross-fade only, no movement: both blocks share one cell, so a shift reads
+     as jitter. Use visibility, not display, to keep both layouts alive while
+     they fade past each other. */
+  #termCard,#aiCard{transition:opacity .22s ease, visibility .22s;}
+  #aiCard{opacity:0;visibility:hidden;}
+  body.stack-ai #aiCard{opacity:1;visibility:visible;}
+  body.stack-ai #termCard{opacity:0;visibility:hidden;}
+  @media (prefers-reduced-motion:reduce){
+    #termCard,#aiCard{transition:none;}
+  }
+
+  .files-toggle{display:inline-flex;margin-right:2px;}
+  .files-toggle .chev{transition:transform .18s;}
+  body.files-open .files-toggle .chev{transform:rotate(180deg);}
+  #colLeft{
+    /* Top edge sits below the card head (topbar + 10 padding + 38 head height),
+       not over the trigger button: covering it causes pointerleave flicker.
+       top/max-height derive from --topbar-h so a topbar change follows through. */
+    position:fixed;left:10px;top:calc(var(--topbar-h) + 48px);z-index:50;
+    width:min(340px,calc(100vw - 20px));max-height:calc(100vh - var(--topbar-h) - 60px);
+    display:flex;flex-direction:column;gap:10px;overflow:hidden;
+    background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-md);
+    box-shadow:var(--shadow-3);padding:10px;
+    opacity:0;visibility:hidden;transform:translateY(-6px);transition:.18s;
+  }
+  body.files-open #colLeft{opacity:1;visibility:visible;transform:none;}
+  /* Inside the overlay, the file tree takes the leftover space; workspace is capped. */
+  #colLeft>.card{min-height:0;}
+  #colLeft>.card:first-of-type{flex:1 1 auto;}
+  /* The overlay's workspace keeps a fixed height; the file tree
+     (flex:1 1 auto + inner scroll) yields instead. */
+  #wsCard{flex:0 0 auto;max-height:none;}
+  /* The overlay's X close button was removed: four paths already close it
+     (toggle button, pointer leave, outside click, Esc). #filesClose stays in
+     the DOM but keeps the global display:none so stacked.js bindings still work. */
+
+  /* The "vis-network" legend bit is engine info; drop it on narrow screens. */
+  .legend .tipbit{display:none;}
+  .legend{gap:12px;padding:6px 10px;}
+  /* "hover.../click..." hints give way to the title on narrow screens - except
+     the terminal one: it is the only clue that terminal lines can be hovered. */
+  .card-head .hint{display:none;}
+  .term .card-head .hint{display:flex;flex:none;white-space:nowrap;margin-left:auto;}
+  /* Graph tool buttons size via .icon-btn.sm (buttons.css); no override here. */
+}
+
+/* The git <-> ai toggle appears only in stacked mode (desktop shows both panes). */
+@media (max-width:1080px){
+  /* inline-grid, not inline-flex: .icon-btn centres its icon via place-items,
+     which flex would lose (it relies on the default grid). */
+  .pswitch{display:inline-grid;}
+}
+/* Narrower (<=760px): compact layout for the collapse toggle and page nav. */
+@media (max-width:760px){
+  /* Narrow topbar margins - matches learn.html (padding 12 / gap 8). */
+  .appbar{gap:8px;padding:0 12px;}
+  .files-toggle span[data-i18n="files.toggle"]{display:none;}
+  #colLeft{width:calc(100vw - 20px);}
+}

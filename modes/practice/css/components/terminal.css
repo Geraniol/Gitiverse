@@ -1,0 +1,115 @@
+.term{
+  /* card head */
+  --t-head-1:#182029; --t-head-2:#11161e;
+  --t-head-ink:#cbd5e2; --t-head-ic:#8492a6; --t-head-hint:#77839a;
+  /* row hover / rewind-position states */
+  --t-hover:#141b25; --t-hover-bd:#3c4b61; --t-active:#0f2030;
+  /* terminal body tones */
+  --t-bright:#e8eef7; --t-cmd:#f0f4fa; --t-sig:#6f7c8f;
+  --t-out:#a3b2c6; --t-out-dim:#6e7b8e; --t-out-gr:#79cb9a; --t-out-red:#e59292;
+  /* "note" block */
+  --t-note:#93a6bf; --t-note-bg:#121b26; --t-note-bd:#35486a; --t-note-ic:#c9a463;
+  /* empty state / footer note row */
+  --t-empty:#5d6b80; --t-note2:#8d9ab0; --t-note2-b:#c6d3e4;
+  /* inline small buttons (hover rewind) */
+  --t-btn:#22314a; --t-btn-bd:#35486c; --t-btn-ink:#a9c6f2;
+  --t-btn-hover:#2e4269; --t-btn-hover-bd:#4a6398;
+  /* input row and shortcut bar */
+  --t-input-bg:#080c12; --t-input-bd:#29323f; --t-input-ink:#eff4fa; --t-ph:#6d7d95;
+  --t-input-focus:#4d6ea8; --t-input-ring:rgba(77,110,168,.16);
+  --t-chips-bg:#0d131b; --t-edge:#1b2330;
+}
+/* --t-edge is the terminal card's own border, one step darker than --term-line */
+/* flex:1 1 0 - splits the middle column evenly with the commit graph.
+   min-height is the floor for the terminal body; both cards fall back to it so
+   a narrow window cannot crush one under the other. */
+.term{background:var(--term-bg);border-color:var(--t-edge);flex:1 1 0;min-height:296px;}
+.term .card-head{background:linear-gradient(180deg,var(--t-head-1),var(--t-head-2));border-color:var(--term-line);color:var(--t-head-ink);}
+.term .card-head>.ic{color:var(--t-head-ic);}
+.term .card-head .hint{color:var(--t-head-hint);}
+.dots{display:flex;gap:5px;margin-right:2px;}
+.dots i{width:9px;height:9px;border-radius:50%;display:block;}
+.term-out{
+  /* top margin aligns with AI's #chat (10px): the first body line does not jump when the two panels swap */
+  flex:1 1 auto;min-height:0;overflow:auto;padding:10px 0 8px;
+  font-family:var(--font-mono);font-size:var(--fs-md);line-height:1.62;
+}
+.tline{padding:4px 12px 6px;border-left:3px solid transparent;transition:background .1s;}
+.tline+.tline{margin-top:1px;}
+.tline:hover{background:var(--t-hover);border-left-color:var(--t-hover-bd);}
+.tline.active{background:var(--t-active);border-left-color:var(--term-blue);}
+.tline.past{opacity:.38;}
+.tline.past .cmdtext{text-decoration:line-through;}
+.tcmd{display:flex;align-items:center;gap:8px;color:var(--t-bright);}
+.tprompt{color:var(--term-green);font-weight:600;white-space:nowrap;flex:none;}
+.tprompt .pth{color:var(--term-blue);}
+.tprompt .br{color:var(--term-amber);}
+.tprompt .sig{color:var(--t-sig);}
+.cmdtext{color:var(--t-cmd);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmdtext:hover{text-decoration:underline;text-underline-offset:3px;}
+.tout{color:var(--t-out);white-space:pre-wrap;}
+.tout.err{color:var(--term-red);}
+.tout.dim{color:var(--t-out-dim);}
+.tout.gr{color:var(--t-out-gr);}
+.tout.red{color:var(--t-out-red);}
+.tout.note{
+  display:flex;gap:7px;align-items:flex-start;margin-top:4px;padding:5px 9px;
+  font-family:var(--font-ui);font-size:var(--fs-sm);line-height:1.6;color:var(--t-note);
+  background:var(--t-note-bg);border-left:2px solid var(--t-note-bd);border-radius:0 var(--r-sm) var(--r-sm) 0;
+}
+.tout.note .ic{margin-top:1px;color:var(--t-note-ic);flex:none;}
+.term-empty{
+  display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;
+  height:100%;color:var(--t-empty);font-family:var(--font-ui);font-size:var(--fs-md);text-align:center;padding:0 30px;
+}
+/* Rewind button: always occupies space, shown/hidden with visibility only. The
+   row would grow ~1px on hover if it toggled display (21px button vs 19.91px
+   text, no fixed height), shifting content and flashing a scrollbar. */
+.trewind{
+  margin-left:auto;flex:none;display:inline-flex;visibility:hidden;align-items:center;gap:5px;height:21px;padding:0 8px;
+  border-radius:var(--r-sm);background:var(--t-btn);border:1px solid var(--t-btn-bd);color:var(--t-btn-ink);
+  font-family:var(--font-ui);font-size:var(--fs-sm);font-weight:650;white-space:nowrap;
+}
+.tline:hover .trewind,.tline.active .trewind{visibility:visible;}
+.trewind:hover{background:var(--t-btn-hover);border-color:var(--t-btn-hover-bd);color:var(--accent-ink);}
+.term-note{padding:5px 12px;font-family:var(--font-ui);font-size:var(--fs-sm);color:var(--t-note2);display:flex;align-items:center;gap:6px;}
+.term-note b{color:var(--t-note2-b);font-family:var(--font-mono);}
+
+.term-input{
+  /* line height and padding match AI's .chat-input (see chat.css): the input row does not shift when the two panels swap */
+  flex:none;border-top:1px solid var(--term-line);background:var(--term-bg2);
+  padding:9px 12px;display:flex;flex-direction:column;gap:8px;
+}
+.cmd-row{display:flex;gap:8px;}
+.cmd-field{
+  /* Radius matches the run/switch buttons in the same row (--r-md): three controls
+     side by side look misaligned if their radii differ. */
+  flex:1;min-width:0;height:var(--ctl-md-h);display:flex;align-items:center;gap:9px;
+  background:var(--t-input-bg);border:1px solid var(--t-input-bd);border-radius:var(--r-md);padding:0 11px;
+  transition:border-color .15s,box-shadow .15s;
+}
+.cmd-field:focus-within{border-color:var(--t-input-focus);box-shadow:0 0 0 3px var(--t-input-ring);}
+.cmd-field .ps{color:var(--term-green);font-family:var(--font-mono);font-weight:700;flex:none;}
+.cmd-field input{
+  flex:1;min-width:0;background:none;border:none;outline:none;color:var(--t-input-ink);
+  font-family:var(--font-mono);font-size:var(--fs-md);padding:0;height:100%;
+}
+.cmd-field input::placeholder{color:var(--t-ph);}
+/* Run button: look from .btn .btn--primary (see buttons.css), only wider padding
+   here. The accent orange replaces the old per-panel blue, giving the row's only
+   primary action one recognisable colour. */
+.run{flex:none;padding:0 18px;}
+.chips{
+  flex:none;display:flex;gap:6px;flex-wrap:nowrap;align-items:center;
+  padding:8px 12px;min-height:40px;overflow-x:auto;overflow-y:hidden;
+  scrollbar-width:none;-ms-overflow-style:none;
+  border-top:1px solid var(--term-line);background:var(--t-chips-bg);
+}
+.chips::-webkit-scrollbar{height:0;display:none;}
+/* Chips in the shortcut bar: look comes from the .chip primitive (see
+   buttons.css), dark surface from .term's local vars. Only the font changes
+   here: git commands need a monospace face so l/1 and O/0 stay distinct. */
+.chip{font-family:var(--font-mono);}
+
+/* The switch button's old dark-terminal skin was removed: .term re-points the
+   --ctl-* local vars instead (see buttons.css). */

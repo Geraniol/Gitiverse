@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Git Adventure — an interactive Git course. Fifteen chapters, one framework.">
+  <title>Git Adventure</title>
+
+
+  <!-- Theme bootstrap. Runs before the first paint so the page never flashes
+       the wrong palette. Mirrors Theme in assets/app.js; change one, change
+       the other. -->
+  <script>
+    window.__docLoads = (window.__docLoads || 0) + 1;
+    (function () {
+      var mode;
+      try { mode = localStorage.getItem('gitcourse.theme'); } catch (e) { mode = null; }
+      if (mode !== 'light' && mode !== 'dark') {
+        mode = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', mode);
+    })();
+  </script>
+
+  <link rel="stylesheet" href="../shared/css/tokens.css">
+  <link rel="stylesheet" href="../shared/css/controls.css">
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/chapter.css">
+</head>
+
+<body>
+  <!-- The shell. It is deliberately empty: app.js builds the app bar, the
+       rail with its two groups, the bottom bar and each page's beats from
+       the content file, so nothing here has to be kept in step by hand. -->
+  <div class="shell shell--read">
+    <header class="appbar" id="appbar"></header>
+    <div class="shell__body">
+      <aside class="rail" id="rail"></aside>
+      <main class="stage" id="stage" tabindex="-1"></main>
+    </div>
+    <nav class="bottombar" id="bottombar" aria-label="Chapter progress"></nav>
+  </div>
+
+  <!-- The rail's hover label (wide rail only). One element, moved and filled
+       by app.js — the same trick as the settings button, and for the same
+       reason: one node cannot disagree with itself. -->
+  <span class="railtip" id="railTip" role="tooltip" hidden></span>
+
+  <noscript>
+    <p style="max-width:44rem;margin:4rem auto;padding:0 1.5rem;font:16px/1.6 system-ui">
+      This chapter is an interactive prototype and needs JavaScript enabled.
+    </p>
+  </noscript>
+
+  <script src="../shared/js/icons.js"></script>
+  <script src="js/data/course.en.js"></script>
+  <script src="js/core/git-term.js"></script>
+  <script src="js/core/file-tree.js"></script>
+  <script src="js/core/file-cards.js"></script>
+  <script src="js/core/loader.js"></script>
+</body>
+</html>

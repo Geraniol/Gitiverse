@@ -1,0 +1,46 @@
+/* One transparent spotlight; its spread shadow paints the surrounding mask. */
+.practice-tour { position:fixed; inset:0; z-index:1000; pointer-events:none; }
+.tour-spotlight {
+  position:fixed; border-radius:var(--r-md); pointer-events:none;
+  box-shadow:0 0 0 4px var(--accent), 0 0 0 9999px rgba(5,10,22,.76);
+  transition:left .24s ease, top .24s ease, width .24s ease, height .24s ease;
+}
+.tour-blocker { position:fixed; pointer-events:auto; }
+.tour-dialog {
+  position:fixed; width:330px; max-width:calc(100vw - 24px); margin:0;
+  padding:20px; border:1px solid var(--line-2); border-radius:var(--r-lg);
+  background:var(--panel); color:var(--ink); box-shadow:0 16px 48px rgba(0,0,0,.28);
+  pointer-events:auto; overflow:auto; font-size:13px; line-height:1.6;
+}
+.tour-kicker { color:var(--accent); font-size:11px; font-weight:700; letter-spacing:.06em; }
+.tour-dialog h2 { margin:8px 0; font-size:20px; line-height:1.25; color:var(--ink); }
+.tour-dialog p { margin:0 0 14px; color:var(--ink-2); }
+.tour-dialog code { font-family:var(--font-mono); color:var(--accent); }
+.tour-action { padding:10px 12px; background:var(--panel-2); border:1px solid var(--line); border-radius:var(--r-sm); }
+.tour-progress { display:flex; gap:5px; margin:16px 0; }
+.tour-progress i { flex:1; height:3px; border-radius:3px; background:var(--line-2); }
+.tour-progress i.done { background:var(--accent); }
+.tour-footer { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.tour-wait { color:var(--ink-3); font-size:12px; }
+.tour-dialog button { white-space:normal; }
+.tour-dialog :focus-visible { outline:3px solid var(--focus); outline-offset:3px; }
+.tour-command { outline:2px solid var(--accent); outline-offset:3px; }
+body.tour-active .pswitch { pointer-events:none; }
+@media (max-width:1080px) {
+  body.tour-tree #colLeft {
+    opacity:1; visibility:visible; transform:none; transition:none;
+    top:66px; max-height:42vh;
+  }
+  body.tour-tree #treeCard { flex:1 1 auto; max-height:36vh; }
+  body.tour-tree #wsCard { display:none; }
+  body.tour-active #termCard, body.tour-active #aiCard { transition:none; }
+}
+@media (max-width:600px) {
+  .tour-dialog { padding:14px; font-size:12px; }
+  .tour-dialog h2 { font-size:18px; }
+  .tour-dialog p { margin-bottom:10px; }
+  .tour-progress { margin:12px 0; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .tour-spotlight { transition:none; }
+}

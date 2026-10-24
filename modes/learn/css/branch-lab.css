@@ -1,0 +1,396 @@
+.branch-guide { display: grid; gap: var(--sp-4); }
+.branch-board { display: grid; gap: var(--sp-3); }
+.branch-task {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-5);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+}
+.branch-task > div {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.branch-task svg { flex: none; color: var(--accent); }
+.branch-task strong { font-weight: var(--fw-semibold); overflow-wrap: anywhere; }
+.branch-task p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+.branch-layout {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+  align-items: stretch;
+}
+.branch-panel {
+  min-width: 0;
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.branch-layout > .gitterm { grid-column: 1 / -1; }
+/* The workspace cell's card IS the file tree itself (.ftree, in chapter.css), so
+   no second border/background: a box-in-box would suggest a nested container. */
+.branch-panel--tree {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.branch-panel h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 0 var(--sp-4);
+  color: var(--text-soft);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+.branch-panel h3 svg { color: var(--accent); flex: none; }
+.branch-panel p { margin: var(--sp-4) 0 0; color: var(--muted); font-size: var(--fs-xs); line-height: 1.6; }
+.branch-map {
+  display: grid;
+  gap: var(--sp-3);
+}
+.branch-map__note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+}
+.branch-compare {
+  display: grid;
+  gap: var(--sp-3);
+}
+.branch-compare__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+.branch-repo {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+}
+.branch-repo--main { border-color: color-mix(in srgb, var(--accent) 30%, var(--border)); }
+.branch-repo--feature { border-color: color-mix(in srgb, var(--info) 42%, var(--border)); }
+.branch-repo__head {
+  display: grid;
+  gap: 4px;
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-sunk);
+}
+.branch-repo__head span {
+  color: var(--muted);
+  font-size: var(--fs-cap);
+  font-weight: var(--fw-bold);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.branch-repo__head strong {
+  font: 800 var(--fs-base) var(--font-mono);
+  color: var(--text);
+}
+.branch-repo__head small {
+  color: var(--muted);
+  font: 650 var(--fs-cap) var(--font-mono);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.branch-repo__files {
+  display: grid;
+  gap: var(--sp-2);
+  min-height: 190px;
+  margin: 0;
+  padding: var(--sp-4);
+  list-style: none;
+}
+.branch-repo__files li {
+  display: grid;
+  grid-template-columns: 1.45rem minmax(7rem, .42fr) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  font-family: var(--font-mono);
+}
+.branch-repo__files li.is-new {
+  border-color: color-mix(in srgb, var(--info) 45%, var(--border));
+  background: var(--info-soft);
+  animation: branch-file-add var(--dur-slow) var(--ease-out-back) both;
+}
+.branch-repo__files b {
+  display: inline-grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: var(--r-sm);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  font-size: var(--fs-cap);
+}
+.branch-repo__files li.is-new b { color: var(--info); background: var(--surface); }
+.branch-repo__files span {
+  min-width: 0;
+  color: var(--text);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+.branch-repo__files code {
+  min-width: 0;
+  color: var(--muted);
+  font-size: var(--fs-cap);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.branch-repo--empty {
+  min-height: 300px;
+  display: grid;
+  place-items: center;
+  padding: var(--sp-5);
+  border-style: dashed;
+  background: var(--surface-sunk);
+  text-align: center;
+}
+.branch-repo--empty strong {
+  color: var(--text);
+  font-size: var(--fs-base);
+}
+.branch-repo--empty p {
+  margin: var(--sp-2) 0 0;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+@keyframes branch-file-add {
+  from { opacity: 0; transform: translateY(12px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.branch-map {
+  padding: var(--sp-4);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface-sunk);
+}
+.branch-diagram { --g-max: 260px; aspect-ratio: auto; height: 172px; }
+.branch-lane {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  cursor: help;
+  box-shadow: none;
+}
+.branch-lane--main { --branch-color: var(--accent); }
+.branch-lane--feature { --branch-color: var(--info); }
+.branch-lane--hotfix { --branch-color: var(--warn); }
+.branch-lane.is-current .branch-lane__head { box-shadow: inset 0 0 0 1px var(--accent-line), var(--shadow-1); }
+.branch-lane__current {
+  color: var(--branch-color);
+  font: 800 .58rem var(--font-mono);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.branch-lane__head {
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  /* the lines start at 230/800 of the frame; the label must stop short of the
+     first commit dot, or it covers it */
+  max-width: min(13rem, 28%);
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--branch-color) 34%, var(--border));
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  backdrop-filter: blur(5px);
+  box-shadow: var(--shadow-1);
+}
+.branch-lane__name {
+  min-width: 0;
+  color: var(--text);
+  font: 800 var(--fs-xs) var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.branch-lane__tip {
+  flex: none;
+  color: var(--muted);
+  font: 650 .62rem var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.branch-lane__files {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: calc(100% + 8px);
+  /* positioned against the band, which is the hover target */
+  pointer-events: none;
+  width: min(30rem, 92vw);
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  color: var(--text-soft);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.branch-lane:hover .branch-lane__files,
+.branch-lane:focus .branch-lane__files,
+.branch-lane:focus-visible .branch-lane__files {
+  opacity: 1;
+  transform: translateY(0);
+}
+.branch-lane__files > span {
+  color: var(--muted);
+  font-size: var(--fs-cap);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.branch-lane__files ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.branch-lane__files li {
+  display: grid;
+  grid-template-columns: minmax(9rem, .4fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--sp-3);
+  font: var(--fs-xs) var(--font-mono);
+}
+.branch-lane__files li span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.branch-lane__files b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  border-radius: var(--r-sm);
+  background: var(--surface-sunk);
+  color: var(--muted);
+  font-size: var(--fs-cap);
+}
+.branch-lane__files code {
+  min-width: 0;
+  color: var(--muted);
+  font: var(--fs-cap)/1.5 var(--font-mono);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.branch-lane--feature .branch-lane__files b { color: var(--info); }
+.branch-lane--main .branch-lane__files b { color: var(--accent); }
+.branch-lane--hotfix .branch-lane__files b { color: var(--warn); }
+.branch-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--sp-3);
+}
+.branch-summary__item {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-3);
+  border: 1px solid color-mix(in srgb, var(--branch-color) 28%, var(--border));
+  border-radius: var(--r-md);
+  background: var(--surface);
+}
+.branch-summary__item--main { --branch-color: var(--accent); }
+.branch-summary__item--feature { --branch-color: var(--info); }
+.branch-summary__item--hotfix { --branch-color: var(--warn); }
+.branch-summary__item h4 {
+  margin: 0;
+  color: var(--text);
+  font: 800 var(--fs-xs) var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.branch-summary__item small {
+  color: var(--muted);
+  font: 650 var(--fs-cap) var(--font-mono);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.branch-summary__item div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.branch-summary__item span {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--surface-sunk);
+  color: var(--text-soft);
+  font: 650 var(--fs-cap) var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.branch-summary__item b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--branch-color);
+  font-size: .65rem;
+}
+.branch-panel--terminal pre {
+  min-height: 132px;
+  margin: 0;
+  padding: var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--surface-sunk);
+  color: var(--text-soft);
+  font: var(--fs-xs)/1.7 var(--font-mono);
+  white-space: pre-wrap;
+}
+@media (max-width: 1080px) {
+  .branch-layout { grid-template-columns: minmax(0, 1fr); }
+  .branch-panel--graph { grid-column: auto; }
+  .branch-compare__grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .branch-panel { padding: var(--sp-4); }
+  .branch-repo__files li { grid-template-columns: 1.45rem minmax(0, 1fr); }
+  .branch-repo__files code { grid-column: 2; }
+  .branch-diagram { min-height: 360px; }
+  .branch-diagram > svg { min-height: 270px; }
+  .branch-lane__files {
+    width: min(22rem, calc(100vw - 4rem));
+  }
+  .branch-lane__files li { grid-template-columns: minmax(0, 1fr); }
+}

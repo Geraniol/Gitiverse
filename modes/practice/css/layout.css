@@ -1,0 +1,56 @@
+
+.main{
+  display:grid;grid-template-columns:2fr 5fr 4fr;gap:12px;padding:12px;
+  height:calc(100vh - var(--topbar-h));min-height:640px;
+  position:relative;                 /* divider is an absolutely positioned overlay */
+}
+.col{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0;}
+
+.card{
+  background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r-md);
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow);min-height:0;
+}
+.card.grow{flex:1 1 auto;min-height:0;}
+.card-head{
+  display:flex;align-items:center;gap:8px;flex:none;
+  background:linear-gradient(180deg,var(--panel),var(--panel-2));
+  border-bottom:1px solid var(--line);padding:0 12px;height:38px;
+  font-size:var(--fs-md);font-weight:700;color:var(--ink-2);letter-spacing:.1px;
+}
+.card-head>.ic{color:var(--ink-3);}
+.card-head .hint{margin-left:auto;font-weight:500;font-size:var(--fs-sm);color:var(--muted);display:flex;align-items:center;gap:5px;}
+/* flex:1 1 auto - fills the card when content is short, pushing the legend/footer down instead of floating mid-card */
+.card-body{flex:1 1 auto;padding:10px 12px;overflow:auto;min-height:0;}
+.card-body.tight{padding:6px 8px;}
+
+
+.sec-cap{
+  display:flex;align-items:center;gap:6px;font-size:var(--fs-cap);font-weight:800;letter-spacing:.7px;
+  text-transform:uppercase;color:var(--muted);margin:0 0 6px;
+}
+.sec-cap .n{margin-left:auto;font-weight:700;letter-spacing:0;text-transform:none;font-size:var(--fs-cap);color:var(--muted);}
+
+
+.split{position:absolute;z-index:20;display:none;}
+.split-col{cursor:col-resize;}
+.split-row{cursor:row-resize;}
+/* Draw only a thin line; the hit area is widened with inset, so it is never "visible but unclickable" */
+.split::after{
+  content:'';position:absolute;background:transparent;border-radius:3px;transition:background .15s;
+}
+.split-col::after{left:2px;top:0;bottom:0;width:3px;}
+.split-row::after{top:2px;left:0;right:0;height:3px;}
+.split:hover::after,body.resizing .split::after{background:var(--focus);}
+body.resizing{user-select:none;cursor:inherit;}
+body.resizing *{cursor:inherit !important;}
+
+@media (min-width:1081px){
+  body.layout-custom .main{
+    grid-template-columns:var(--col-l,246px) minmax(0,1fr) var(--col-r,492px);
+  }
+  body.layout-custom #colMid   > .graph-card{flex:0 0 var(--row-mid,50%);}
+  /* Fallback 50%: matches the undragged "graph / terminal split in half" (see
+     graph.css). After dragging, --row-mid holds the user's ratio. */
+  body.layout-custom #aiCard{flex:1 1 auto;max-height:none;}
+  .split{display:block;}
+}

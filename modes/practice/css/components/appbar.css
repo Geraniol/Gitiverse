@@ -1,0 +1,60 @@
+.appbar{
+  display:flex;align-items:center;gap:12px;height:var(--topbar-h);padding:0 24px;
+  background:color-mix(in srgb,var(--panel) 86%,transparent);
+  backdrop-filter:blur(14px);
+  color:var(--ink);
+  border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:20;
+  transition:background var(--dur) var(--ease),border-color var(--dur) var(--ease);
+}
+/* Keep the brand together; compact screens retain the logo. The brand is an <a>
+   (the way home, as in learn.html), so strip the default link underline and
+   colour to keep it reading as a wordmark. */
+.brand{flex:none;display:flex;align-items:center;gap:8px;white-space:nowrap;color:inherit;text-decoration:none;}
+
+/* Brand mark matches the icon buttons on the same row: a 38px rounded square,
+   --r-md (12px), orange-to-purple diagonal gradient, white icon, no shadow.
+   The inner icon scales to 23px. */
+.brand-logo{
+  width:38px;height:38px;flex:none;
+  display:grid;place-items:center;
+  border-radius:var(--r-md);
+  background:linear-gradient(145deg,var(--accent),color-mix(in srgb,var(--accent) 62%,var(--indigo)));
+  /* The icon is always white: the gradient beneath is the same block in both
+     themes, so --accent-ink (text on the accent colour) is the right token. */
+  color:var(--accent-ink);
+}
+.brand-logo .ic{color:var(--accent-ink);width:23px;height:23px;}
+
+/* The brand name is deliberately off the type scale: it is the identity of the
+   surface, not a label. Uses --fs-num (17px), same as learn.html's --fs-brand,
+   with letter-spacing -0.01em. */
+.brand-name{font-size:var(--fs-num);font-weight:700;letter-spacing:-.01em;color:var(--ink);}
+
+.spacer{flex:1;min-width:0;}
+
+.appbar .page-link{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:auto;gap:8px;padding:0 12px;
+  font-size:var(--fs-sm);font-weight:600;text-decoration:none;white-space:nowrap;
+}
+.appbar .page-link[hidden]{display:none;}
+@media (max-width:760px){
+  .appbar .page-link{width:38px;padding:0;}
+  .appbar .page-link__label{display:none;}
+}
+@media (max-width:600px){
+  .appbar .brand-name{display:none;}
+}
+
+/* The mode switch (.modes / .mode) is gone - see the file header. app.js's
+   renderModeChrome still loops over .mode; an empty set is a no-op. */
+
+/* Theme toggle (sun/moon): both icons stay in the DOM and [data-theme] picks
+   which is shown. The button shows the state it switches TO: a moon in light. */
+.theme-toggle .ic-sun{display:none;}
+.theme-toggle .ic-moon{display:inline-flex;}
+[data-theme="dark"] .theme-toggle .ic-sun{display:inline-flex;}
+[data-theme="dark"] .theme-toggle .ic-moon{display:none;}
+
+.appbar .icon-btn .ic{width:15px;height:15px;}

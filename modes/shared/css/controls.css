@@ -1,0 +1,88 @@
+
+:root {
+  --ctl-bg: var(--surface);
+  --ctl-bg-hover: var(--surface-2);
+  --ctl-bg-active: var(--surface-3);
+  --ctl-bd: var(--border-ctl);
+  --ctl-bd-hover: var(--border-strong);
+  --ctl-bd-hover-i: var(--border-strong);   /* .icon-btn hover border */
+  --ctl-fg: var(--text);
+  --ctl-fg-idle: var(--muted);
+  --ctl-fg-hover: var(--text);
+}
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--sp-icon, 7px);
+  flex: none;
+  height: var(--ctl-md-h);
+  padding: 0 14px;
+  border-radius: var(--r-md);
+  border: var(--bw, 1px) solid var(--ctl-bd);
+  background: var(--ctl-bg);
+  color: var(--ctl-fg);
+  font-size: var(--fs-xs, 12px);
+  font-weight: var(--fw-semibold, 600);
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+  transition: scale var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease);
+}
+.btn:hover {
+  background: var(--ctl-bg-hover);
+  border-color: var(--ctl-bd-hover);
+  box-shadow: var(--shadow-2);
+}
+.btn:active {
+  background: var(--ctl-bg-active);
+  box-shadow: var(--shadow-1);
+  scale: var(--press);
+}
+/* WARNING: press scale uses the standalone `scale` property, not
+   `transform: scale()`: entry animations override transform and would keep it
+   pressed. The transition must list `scale` too, or the press will not animate. */
+
+/* WARNING: hover / active deliberately omit :not([disabled]). With it the
+   selector is (0,3,0) and beats each page's later .btn--primary:hover (0,2,0).
+   Safe without it: disabled controls have pointer-events: none. */
+.btn[disabled], .btn:disabled { opacity: 0.4; pointer-events: none; }
+
+/* WARNING: inline-grid, not grid - the practice page's password-eye button
+   sits inline in an input row and grid would make it block. */
+.icon-btn {
+  --ib: var(--ctl-md-h);
+  flex: none;
+  width: var(--ib);
+  height: var(--ib);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--r-md);
+  border: var(--bw, 1px) solid var(--ctl-bd);
+  background: var(--ctl-bg);
+  color: var(--ctl-fg-idle);
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+  transition: background-color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease),
+              color var(--dur-fast) var(--ease),
+              scale var(--dur-fast) var(--ease);
+}
+.icon-btn:hover {
+  background: var(--ctl-bg-hover);
+  color: var(--ctl-fg-hover);
+  border-color: var(--ctl-bd-hover-i);
+  box-shadow: var(--shadow-2);
+}
+/* Press scale: with no text, a scale reads as "pressed" better than a lift. */
+.icon-btn:active {
+  background: var(--ctl-bg-active);
+  box-shadow: var(--shadow-1);
+  scale: var(--press);
+}
+.icon-btn[disabled], .icon-btn:disabled { opacity: 0.4; pointer-events: none; }
